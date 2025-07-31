@@ -7,6 +7,8 @@
 #include <QSqlQuery>
 #include <QSqlDriver>
 #include <QDate>
+#include <QFile>
+#include <QProcess>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -14,9 +16,35 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    QString dbFile = "yx_routinetracker.db";
+    QString schemaFile = "schema.sql";
+    QString sqlitePath = "sqlite3.exe";
+
+    // create yx_routinetracker.db and create schema if it does not exist.
+    if (!QFile::exists(dbFile)) {
+        if (!QFile::exists(schemaFile)) {
+            QMessageBox::critical(this, "Db Error", "Error: schema.sql not found while creating database.");
+            return;
+        }
+
+        QStringList arguments;
+        arguments << dbFile << QString(".read %1").arg(schemaFile);
+        QProcess process;
+        process.start(sqlitePath, arguments);
+        process.waitForFinished();
+
+        qDebug() << "=== SQLite3 Database Creation ===";
+        qDebug() << "Attempted to create database:" << dbFile;
+        qDebug() << "Using schema file:" << schemaFile;
+        qDebug() << "SQLite3 process path:" << sqlitePath;
+        qDebug() << "--- Process Output ---";
+        qDebug() << "stdout:" << process.readAllStandardOutput();
+        qDebug() << "stderr:" << process.readAllStandardError();
+        qDebug() << "===============================";
+    }
+
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");  // Use as default connection.
-    // create yx_routinetracker.db and create schema if it never existed.
-    db.setDatabaseName("yx_routinetracker.db");
+    db.setDatabaseName(dbFile);
     bool ok = db.open();
     if (!ok) {
         QMessageBox::critical(this, "Db Error", db.lastError().text());
@@ -24,6 +52,12 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     QObject::connect(ui->btnSettings, &QPushButton::clicked, this, &MainWindow::test);
+    QObject::connect(ui->btnNextDate, &QPushButton::clicked, this, &MainWindow::btnNextDate_clicked);
+    QObject::connect(ui->btnPreviousDate, &QPushButton::clicked, this, &MainWindow::btnPreviousDate_clicked);
+
+    displayDate = QDate::currentDate();
+    ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
+    ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
 
     show();
 }
@@ -38,6 +72,73 @@ MainWindow::~MainWindow()
     }
     QSqlDatabase::removeDatabase(connName);
     delete ui;
+}
+
+QString MainWindow::getDayFromInt(int n) {
+    if (n == 1) return "Mon";
+    else if (n == 2) return "Tues";
+    else if (n == 3) return "Wed";
+    else if (n == 4) return "Thurs";
+    else if (n == 5) return "Fri";
+    else if (n == 6) return "Sat";
+    else if (n == 7) return "Sun";
+    else {
+        QMessageBox::critical(this, "Computation Error", "Day Conversion Error. n = " + QString::number(n) + ".");
+        return "?";
+    }
+}
+
+void MainWindow::btnNextDate_clicked() {
+    displayDate = displayDate.addDays(1);
+    ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
+    ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
+}
+
+void MainWindow::btnPreviousDate_clicked() {
+    displayDate = displayDate.addDays(-1);
+    ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
+    ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
+}
+
+QStringList MainWindow::getRoutineOfDate(QDate date) {
+    QStringList routineList;
+    {
+        QSqlQuery query;
+        query.setForwardOnly(true);
+        bool ok = query.exec(
+            "SELECT id, name, type, type_param, priority "
+            "FROM routine "
+            "WHERE is_active = 1;"
+            );
+        if (!ok) {
+            QMessageBox::critical(this, "Db Error", query.lastError().text());
+            return routineList;
+        }
+        while (query.next()) {
+            qint64 id = query.value(0).toLongLong();
+            QString name = query.value(1).toString();
+            qDebug() << "id: " << id << "  name: " << name;
+        }
+    }
+    {
+        QSqlQuery query;
+        query.setForwardOnly(true);
+        bool ok = query.exec(
+            "SELECT id, name, type, type_param, priority "
+            "FROM routine "
+            "WHERE date = :date;"
+            );
+        if (!ok) {
+            QMessageBox::critical(this, "Db Error", query.lastError().text());
+            return routineList;
+        }
+        while (query.next()) {
+            qint64 id = query.value(0).toLongLong();
+            QString name = query.value(1).toString();
+            qDebug() << "id: " << id << "  name: " << name;
+        }
+    }
+    return routineList;
 }
 
 void MainWindow::test() {

@@ -33,14 +33,14 @@
    <widget class="QLabel" name="lblDate">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>140</x>
       <y>18</y>
-      <width>49</width>
+      <width>71</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Date</string>
+     <string>30 Jan 2025</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -60,7 +60,7 @@
     <property name="geometry">
      <rect>
       <x>100</x>
-      <y>14</y>
+      <y>20</y>
       <width>24</width>
       <height>24</height>
      </rect>
@@ -76,7 +76,7 @@
     <property name="geometry">
      <rect>
       <x>230</x>
-      <y>14</y>
+      <y>20</y>
       <width>24</width>
       <height>24</height>
      </rect>
@@ -85,7 +85,23 @@
      <string/>
     </property>
     <property name="icon">
-     <iconset theme="QIcon::ThemeIcon::GoPrevious"/>
+     <iconset theme="QIcon::ThemeIcon::GoNext"/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblDay">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>40</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Thurs</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
     </property>
    </widget>
   </widget>
