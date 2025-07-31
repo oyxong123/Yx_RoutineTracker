@@ -21,14 +21,14 @@ public:
 private slots:
     void btnNextDate_clicked();
     void btnPreviousDate_clicked();
+    void btnRoutine_clicked();
     void test();
-
-public slots:
 
 private:
     Ui::MainWindow *ui;
     QDate displayDate;
     QString getDayFromInt(int n);
     QStringList getRoutineOfDate(QDate date);
+    void initialize();
 };
 #endif // MAINWINDOW_H

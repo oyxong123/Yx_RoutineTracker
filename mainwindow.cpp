@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "routinedialog.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include <QSqlDatabase>
@@ -51,13 +52,12 @@ MainWindow::MainWindow(QWidget *parent)
         return;
     }
 
-    QObject::connect(ui->btnSettings, &QPushButton::clicked, this, &MainWindow::test);
+    QObject::connect(ui->btnHistory, &QPushButton::clicked, this, &MainWindow::test);
     QObject::connect(ui->btnNextDate, &QPushButton::clicked, this, &MainWindow::btnNextDate_clicked);
     QObject::connect(ui->btnPreviousDate, &QPushButton::clicked, this, &MainWindow::btnPreviousDate_clicked);
+    QObject::connect(ui->btnRoutine, &QPushButton::clicked, this, &MainWindow::btnRoutine_clicked);
 
-    displayDate = QDate::currentDate();
-    ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
-    ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
+    initialize();
 
     show();
 }
@@ -74,7 +74,16 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-QString MainWindow::getDayFromInt(int n) {
+void MainWindow::initialize()
+{
+    displayDate = QDate::currentDate();
+    ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
+    ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
+    qDebug() << "Main Window initialized";
+}
+
+QString MainWindow::getDayFromInt(int n)
+{
     if (n == 1) return "Mon";
     else if (n == 2) return "Tues";
     else if (n == 3) return "Wed";
@@ -88,19 +97,31 @@ QString MainWindow::getDayFromInt(int n) {
     }
 }
 
-void MainWindow::btnNextDate_clicked() {
+void MainWindow::btnNextDate_clicked()
+{
     displayDate = displayDate.addDays(1);
     ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
     ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
 }
 
-void MainWindow::btnPreviousDate_clicked() {
+void MainWindow::btnPreviousDate_clicked()
+{
     displayDate = displayDate.addDays(-1);
     ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
     ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
 }
 
-QStringList MainWindow::getRoutineOfDate(QDate date) {
+void MainWindow::btnRoutine_clicked()
+{
+    hide();
+    RoutineDialog *rd = new RoutineDialog();
+    rd->exec();
+    initialize();
+    show();
+}
+
+QStringList MainWindow::getRoutineOfDate(QDate date)
+{
     QStringList routineList;
     {
         QSqlQuery query;
@@ -141,7 +162,8 @@ QStringList MainWindow::getRoutineOfDate(QDate date) {
     return routineList;
 }
 
-void MainWindow::test() {
+void MainWindow::test()
+{
     {
         QSqlQuery query;  // Queries default database when unspecified.
         query.setForwardOnly(true);  // Used during cases where only next() and seek() (forward browsing) is utilized, to improve query speed.

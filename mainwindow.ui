@@ -14,11 +14,11 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="btnSettings">
+   <widget class="QPushButton" name="btnHistory">
     <property name="geometry">
      <rect>
       <x>310</x>
-      <y>14</y>
+      <y>20</y>
       <width>24</width>
       <height>24</height>
      </rect>
@@ -102,6 +102,22 @@
     </property>
     <property name="alignment">
      <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnRoutine">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>24</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset theme="QIcon::ThemeIcon::FolderOpen"/>
     </property>
    </widget>
   </widget>
