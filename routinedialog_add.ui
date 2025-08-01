@@ -6,24 +6,279 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>431</width>
+    <height>95</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Add Routine</string>
   </property>
-  <widget class="QPushButton" name="btnTest">
+  <widget class="QLabel" name="lblName">
    <property name="geometry">
     <rect>
-     <x>160</x>
+     <x>30</x>
+     <y>20</y>
+     <width>101</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LayoutDirection::LeftToRight</enum>
+   </property>
+   <property name="text">
+    <string>Routine Name :</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lblType">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>50</y>
+     <width>101</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Type :</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lblTypeParam">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
      <y>80</y>
-     <width>80</width>
+     <width>101</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="cbType">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>50</y>
+     <width>101</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>Daily</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Weekly</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Biweekly</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Monthly</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Quarterly</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Semiannually</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Annually</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Day</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Interval</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLineEdit" name="inpName">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>20</y>
+     <width>201</width>
      <height>24</height>
     </rect>
    </property>
    <property name="text">
-    <string>PushButton</string>
+    <string/>
+   </property>
+  </widget>
+  <widget class="QStackedWidget" name="contTypeParam">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>80</y>
+     <width>251</width>
+     <height>171</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>2</number>
+   </property>
+   <widget class="QWidget" name="pgDay">
+    <widget class="QCheckBox" name="chkMon">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>78</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Mon</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkTues">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>78</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Tues</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkWed">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>78</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Wed</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkThurs">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>78</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Thurs</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkFri">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>78</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Fri</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkSat">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>78</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Sat</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkSun">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>0</y>
+       <width>78</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Sun</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="pgBiweekly">
+    <widget class="QCalendarWidget" name="calBiweekly">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>0</y>
+       <width>231</width>
+       <height>171</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="pgInterval">
+    <widget class="QSpinBox" name="sbInterval">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>0</y>
+       <width>42</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QPushButton" name="btnAdd">
+   <property name="geometry">
+    <rect>
+     <x>380</x>
+     <y>20</y>
+     <width>24</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::FocusPolicy::StrongFocus</enum>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::ListAdd"/>
    </property>
   </widget>
  </widget>

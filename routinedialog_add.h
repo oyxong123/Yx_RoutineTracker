@@ -21,7 +21,8 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private slots:
-    void btnTest_clicked();
+    void cbType_currentIndexChanged(int index);
+    void btnAdd_clicked();
 
 private:
     Ui::RoutineDialog_Add *ui;
