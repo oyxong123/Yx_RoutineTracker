@@ -1,15 +1,13 @@
 #include "mainwindow.h"
 #include "routinedialog.h"
 #include "ui_mainwindow.h"
+
 #include <QDebug>
-#include <QSqlDatabase>
 #include <QSqlError>
-#include <QMessageBox>
 #include <QSqlQuery>
 #include <QSqlDriver>
 #include <QDate>
-#include <QFile>
-#include <QProcess>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -17,48 +15,12 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    QString dbFile = "yx_routinetracker.db";
-    QString schemaFile = "schema.sql";
-    QString sqlitePath = "sqlite3.exe";
-
-    // create yx_routinetracker.db and create schema if it does not exist.
-    if (!QFile::exists(dbFile)) {
-        if (!QFile::exists(schemaFile)) {
-            QMessageBox::critical(this, "Db Error", "Error: schema.sql not found while creating database.");
-            return;
-        }
-
-        QStringList arguments;
-        arguments << dbFile << QString(".read %1").arg(schemaFile);
-        QProcess process;
-        process.start(sqlitePath, arguments);
-        process.waitForFinished();
-
-        qDebug() << "=== SQLite3 Database Creation ===";
-        qDebug() << "Attempted to create database:" << dbFile;
-        qDebug() << "Using schema file:" << schemaFile;
-        qDebug() << "SQLite3 process path:" << sqlitePath;
-        qDebug() << "--- Process Output ---";
-        qDebug() << "stdout:" << process.readAllStandardOutput();
-        qDebug() << "stderr:" << process.readAllStandardError();
-        qDebug() << "===============================";
-    }
-
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");  // Use as default connection.
-    db.setDatabaseName(dbFile);
-    bool ok = db.open();
-    if (!ok) {
-        QMessageBox::critical(this, "Db Error", db.lastError().text());
-        return;
-    }
-
     QObject::connect(ui->btnHistory, &QPushButton::clicked, this, &MainWindow::test);
     QObject::connect(ui->btnNextDate, &QPushButton::clicked, this, &MainWindow::btnNextDate_clicked);
     QObject::connect(ui->btnPreviousDate, &QPushButton::clicked, this, &MainWindow::btnPreviousDate_clicked);
     QObject::connect(ui->btnRoutine, &QPushButton::clicked, this, &MainWindow::btnRoutine_clicked);
 
     initialize();
-
     show();
 }
 
@@ -67,11 +29,11 @@ MainWindow::~MainWindow()
     // Close and remove the db connection (structured this way to ensure safe removal of db connection).
     QString connName = QSqlDatabase::database().connectionName();
     {
-        QSqlDatabase db = QSqlDatabase::database();
-        db.close();
+        QSqlDatabase::database().close();
     }
     QSqlDatabase::removeDatabase(connName);
     delete ui;
+    qDebug() << "Application existed successfully";
 }
 
 void MainWindow::initialize()
@@ -80,6 +42,11 @@ void MainWindow::initialize()
     ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
     ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
     qDebug() << "Main Window initialized";
+}
+
+void MainWindow::initializeFromOutside()
+{
+    initialize();
 }
 
 QString MainWindow::getDayFromInt(int n)
@@ -114,10 +81,8 @@ void MainWindow::btnPreviousDate_clicked()
 void MainWindow::btnRoutine_clicked()
 {
     hide();
-    RoutineDialog *rd = new RoutineDialog();
-    rd->exec();
-    initialize();
-    show();
+    RoutineDialog *rd = new RoutineDialog(this);
+    rd->show();
 }
 
 QStringList MainWindow::getRoutineOfDate(QDate date)
