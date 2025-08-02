@@ -75,14 +75,17 @@ void RoutineDialog_Add::btnAdd_clicked()
     QString type_param = nullptr;
     if (type == "Day"){
         QString selectedDays;
-        if (ui->chkMon) selectedDays + "Mon,";
-        if (ui->chkTues) selectedDays + "Tues,";
-        if (ui->chkWed) selectedDays + "Wed,";
-        if (ui->chkThurs) selectedDays + "Thurs,";
-        if (ui->chkFri) selectedDays + "Fri,";
-        if (ui->chkSat) selectedDays + "Sat,";
-        if (ui->chkSun) selectedDays + "Sun,";
+        if (ui->chkMon->checkState() != Qt::Unchecked) selectedDays += "Mon, ";
+        if (ui->chkTues->checkState() != Qt::Unchecked) selectedDays += "Tues, ";
+        if (ui->chkWed->checkState() != Qt::Unchecked) selectedDays += "Wed, ";
+        if (ui->chkThurs->checkState() != Qt::Unchecked) selectedDays += "Thurs, ";
+        if (ui->chkFri->checkState() != Qt::Unchecked) selectedDays += "Fri, ";
+        if (ui->chkSat->checkState() != Qt::Unchecked) selectedDays += "Sat, ";
+        if (ui->chkSun->checkState() != Qt::Unchecked) selectedDays += "Sun, ";
+        if (!selectedDays.isEmpty()) selectedDays.chop(2);
         type_param = selectedDays;
+        qDebug() << selectedDays;
+        qDebug() << type_param;
     } else if (type == "Biweekly") {
         QString selectedDate = ui->calBiweekly->selectedDate().toString();
         type_param = selectedDate;
@@ -111,7 +114,7 @@ void RoutineDialog_Add::btnAdd_clicked()
         qDebug() << "Result Set: ";
         while (query.next()) {
             int count = query.value(0).toInt();
-            qDebug() << "count: " << count;
+            qDebug() << "count:" << count;
             priority = count + 1;
         }
         if (priority == 0) {
@@ -138,6 +141,6 @@ void RoutineDialog_Add::btnAdd_clicked()
         }
     }
 
-    QMessageBox::information(this, "Success", "Created routine " + name + "!");
+    QMessageBox::information(this, "Success", "Created routine: " + name + "!");
     close();
 }

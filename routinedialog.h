@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 
 #include <QDialog>
+#include <QTreeWidgetItem>
 
 namespace Ui {
 class RoutineDialog;
@@ -25,12 +26,17 @@ private slots:
     void btnHome_clicked();
     void btnAdd_clicked();
     void btnDel_clicked();
+    void treRoutine_activeChecked(QTreeWidgetItem *item, int col);
 
 private:
     Ui::RoutineDialog *ui;
     MainWindow *mw;
     void initialize();
-    void test();
+    int idxColName;
+    int idxColTypeParam;
+    int idxColActive;
+    int idxColPriority;
+    int RoleId = Qt::UserRole;
 };
 
 #endif // ROUTINEDIALOG_H
