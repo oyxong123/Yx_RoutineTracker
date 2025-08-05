@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/system">
+        <file>resources/Hackmon16.png</file>
+    </qresource>
+</RCC>

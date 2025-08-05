@@ -1,4 +1,6 @@
 QT       += core gui sql
+# RC_ICONS = resources/FIXME.ico  // set application icon here.
+TARGET = Yx-RoutineTracker
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -19,7 +21,8 @@ HEADERS += \
     historydialog_search.h \
     mainwindow.h \
     routinedialog.h \
-    routinedialog_add.h
+    routinedialog_add.h \
+    routinestruct.h
 
 FORMS += \
     historydialog_search.ui \
@@ -36,3 +39,6 @@ QMAKE_POST_LINK += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resources.qrc

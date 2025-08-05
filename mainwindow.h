@@ -1,8 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "routinestruct.h"
+
 #include <QMainWindow>
 #include <QDate>
+#include <QSystemTrayIcon>
+#include <QMenu>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -17,19 +21,30 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    QSystemTrayIcon tray;
+    QMenu trayMenu;
+    QAction *exitAction = new QAction;
     void initializeFromOutside();
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
 private slots:
     void btnNextDate_clicked();
     void btnPreviousDate_clicked();
     void btnRoutine_clicked();
-    void test();
+    void btnHistory_clicked();
+    void tray_clicked(QSystemTrayIcon::ActivationReason reason);
+    void trayExitAction_clicked(bool checked);
 
 private:
     Ui::MainWindow *ui;
     QDate displayDate;
     QString getDayFromInt(int n);
-    QStringList getRoutineOfDate(QDate date);
+    QList<RoutineGroup*> getRoutineOfDate(QDate date);
     void initialize();
+    void centerWindow();
+    bool forceExit = false;
+    bool hasRecordInRange(QDate startDate, QDate endDate);
 };
 #endif // MAINWINDOW_H

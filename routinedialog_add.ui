@@ -138,11 +138,11 @@
      <x>140</x>
      <y>80</y>
      <width>251</width>
-     <height>171</height>
+     <height>211</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="pgDay">
     <widget class="QCheckBox" name="chkMon">
@@ -168,7 +168,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Tues</string>
+      <string>Tue</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="chkWed">
@@ -194,7 +194,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Thurs</string>
+      <string>Thu</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="chkFri">
@@ -259,6 +259,22 @@
        <height>25</height>
       </rect>
      </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>999999999</number>
+     </property>
+    </widget>
+    <widget class="QCalendarWidget" name="calInterval">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>231</width>
+       <height>171</height>
+      </rect>
+     </property>
     </widget>
    </widget>
   </widget>
@@ -279,6 +295,22 @@
    </property>
    <property name="icon">
     <iconset theme="QIcon::ThemeIcon::ListAdd"/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lblTypeParam_2">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>110</y>
+     <width>101</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
    </property>
   </widget>
  </widget>

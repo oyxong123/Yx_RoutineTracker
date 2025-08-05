@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "routinedialog.h"
 #include "ui_mainwindow.h"
+#include "routinestruct.h"
 
 #include <QDebug>
 #include <QSqlError>
@@ -8,6 +9,9 @@
 #include <QSqlDriver>
 #include <QDate>
 #include <QMessageBox>
+#include <QCloseEvent>
+#include <QTimer>
+#include <QCheckBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -15,12 +19,24 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    QObject::connect(ui->btnHistory, &QPushButton::clicked, this, &MainWindow::test);
+    QObject::connect(ui->btnHistory, &QPushButton::clicked, this, &MainWindow::btnHistory_clicked);
     QObject::connect(ui->btnNextDate, &QPushButton::clicked, this, &MainWindow::btnNextDate_clicked);
     QObject::connect(ui->btnPreviousDate, &QPushButton::clicked, this, &MainWindow::btnPreviousDate_clicked);
     QObject::connect(ui->btnRoutine, &QPushButton::clicked, this, &MainWindow::btnRoutine_clicked);
 
-    initialize();
+    // Initialize system tray icon.
+    exitAction = trayMenu.addAction("Exit");
+    QObject::connect(exitAction, &QAction::triggered, this, &MainWindow::trayExitAction_clicked);
+    tray.setIcon(QIcon(":/system/resources/Hackmon16.png"));
+    tray.setToolTip("Yx-RoutineTracker");
+    tray.setContextMenu(&trayMenu);
+    tray.show();
+
+    displayDate = QDate::currentDate();
+    ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
+    ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
+
+    QTimer::singleShot(0, this, &MainWindow::initialize);  // Need to be defered, otherwise would return 'qt.sql.qsqlquery: QSqlQuery::exec: database not open'.
     show();
 }
 
@@ -36,11 +52,47 @@ MainWindow::~MainWindow()
     qDebug() << "Application existed successfully";
 }
 
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if (!forceExit)
+    {
+        hide();
+        event->ignore();  // Ignore quit app event.
+    }
+}
+
 void MainWindow::initialize()
 {
-    displayDate = QDate::currentDate();
-    ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
-    ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
+    // Reset window to initial height.
+    int defaultContHeight = 40;
+    int defaultWindowHeight = 110;
+
+    // Reset UI.
+    QList<QWidget*> children = ui->contRoutines->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
+    for (QWidget* child : children) delete child;
+
+    QList<RoutineGroup*> routineGrps = getRoutineOfDate(displayDate);
+    int firstX = 0;
+    int firstY = 0;
+    int spacing = 0;
+    for (const RoutineGroup* routineGrp : routineGrps) {
+        QLabel* lbl = new QLabel(routineGrp->name, ui->contRoutines);
+        lbl->move(firstX, firstY + spacing);
+        lbl->show();
+
+        for (const Routine* routine: routineGrp->content) {
+            spacing += 20;
+            QCheckBox *chk = new QCheckBox(routine->name, ui->contRoutines);
+            chk->move(firstX, firstY + spacing);
+            chk->show();
+        }
+
+        spacing += 30;
+    }
+
+    int offset = 40;  // Value to offset the final 30px of unecessary spacing added during the last iteration. (plus something else I don't know to be transparent)
+    ui->contRoutines->setFixedHeight(defaultContHeight + spacing - offset);
+    this->setFixedHeight(defaultWindowHeight + spacing - offset);
+    centerWindow();
     qDebug() << "Main Window initialized";
 }
 
@@ -49,12 +101,20 @@ void MainWindow::initializeFromOutside()
     initialize();
 }
 
+void MainWindow::centerWindow()
+{
+    QRect screenGeo = QGuiApplication::primaryScreen()->availableGeometry();
+    int x = (screenGeo.width() - this->width()) / 2;
+    int y = (screenGeo.height() - this->height()) / 2 - 20;  // The additional 20px deducted is to account for the taskbar height at the bottom.
+    this->move(x, y);
+}
+
 QString MainWindow::getDayFromInt(int n)
 {
     if (n == 1) return "Mon";
-    else if (n == 2) return "Tues";
+    else if (n == 2) return "Tue";
     else if (n == 3) return "Wed";
-    else if (n == 4) return "Thurs";
+    else if (n == 4) return "Thu";
     else if (n == 5) return "Fri";
     else if (n == 6) return "Sat";
     else if (n == 7) return "Sun";
@@ -69,6 +129,7 @@ void MainWindow::btnNextDate_clicked()
     displayDate = displayDate.addDays(1);
     ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
     ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
+    initialize();
 }
 
 void MainWindow::btnPreviousDate_clicked()
@@ -76,6 +137,7 @@ void MainWindow::btnPreviousDate_clicked()
     displayDate = displayDate.addDays(-1);
     ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
     ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
+    initialize();
 }
 
 void MainWindow::btnRoutine_clicked()
@@ -85,89 +147,225 @@ void MainWindow::btnRoutine_clicked()
     rd->show();
 }
 
-QStringList MainWindow::getRoutineOfDate(QDate date)
+void MainWindow::btnHistory_clicked()
 {
-    QStringList routineList;
-    {
-        QSqlQuery query;
-        query.setForwardOnly(true);
-        bool ok = query.exec(
-            "SELECT id, name, type, type_param, priority "
-            "FROM routine "
-            "WHERE is_active = 1;"
-            );
-        if (!ok) {
-            QMessageBox::critical(this, "Db Error", query.lastError().text());
-            return routineList;
-        }
-        while (query.next()) {
-            qint64 id = query.value(0).toLongLong();
-            QString name = query.value(1).toString();
-            qDebug() << "id: " << id << "  name: " << name;
-        }
-    }
-    {
-        QSqlQuery query;
-        query.setForwardOnly(true);
-        bool ok = query.exec(
-            "SELECT id, name, type, type_param, priority "
-            "FROM routine "
-            "WHERE date = :date;"
-            );
-        if (!ok) {
-            QMessageBox::critical(this, "Db Error", query.lastError().text());
-            return routineList;
-        }
-        while (query.next()) {
-            qint64 id = query.value(0).toLongLong();
-            QString name = query.value(1).toString();
-            qDebug() << "id: " << id << "  name: " << name;
-        }
-    }
-    return routineList;
+    initialize();
 }
 
-void MainWindow::test()
+QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)
 {
-    {
-        QSqlQuery query;  // Queries default database when unspecified.
-        query.setForwardOnly(true);  // Used during cases where only next() and seek() (forward browsing) is utilized, to improve query speed.
-        bool ok = query.exec(
-            "SELECT id, name "
-            "FROM routine "
-            "WHERE is_active = 1;"
-            );
-        if (!ok) {
-            QMessageBox::critical(this, "Db Error", query.lastError().text());
-            return;
-        }
-        while (query.next()) {
-            qint64 id = query.value(0).toLongLong();
-            QString name = query.value(1).toString();
-            qDebug() << "id: " << id << "  name: " << name;
+    RoutineGroup *grpDaily = new RoutineGroup("Daily");
+    RoutineGroup *grpWeekly = new RoutineGroup("Weekly");
+    RoutineGroup *grpBiweekly = new RoutineGroup("Biweekly");
+    RoutineGroup *grpMonthly = new RoutineGroup("Monthly");
+    RoutineGroup *grpQuarterly = new RoutineGroup("Quarterly");
+    RoutineGroup *grpSemiannually = new RoutineGroup("Semiannually");
+    RoutineGroup *grpAnnually = new RoutineGroup("Annually");
+    RoutineGroup *grpDay = new RoutineGroup("Day");
+    RoutineGroup *grpInterval = new RoutineGroup("Interval");
+    QList<RoutineGroup*> routineGrps = { grpDaily, grpWeekly, grpBiweekly, grpMonthly, grpQuarterly, grpSemiannually, grpAnnually, grpDay, grpInterval };
+
+    QSqlQuery query;
+    query.setForwardOnly(true);
+    bool ok = query.exec(
+        "SELECT id, name, type, type_param, priority "
+        "FROM routine "
+        "WHERE is_active = 1;"
+        );
+    qDebug() << "Executed Query: " << query.executedQuery();
+    if (!ok) {
+        QMessageBox::critical(this, "Db Error", query.lastError().text());
+        return routineGrps;
+    }
+    qDebug() << "Result Set: ";
+    while (query.next()) {
+        qint64 id = query.value(0).toLongLong();
+        QString name = query.value(1).toString();
+        QString type = query.value(2).toString();
+        QString type_param = query.value(3).toString();
+        int priority = query.value(4).toInt();
+        qDebug() << "id:" << id << "  name:" << name << " type:" << type << " type_param:" << type_param << " priority:" << priority;
+
+        Routine *routine = new Routine();
+        routine->id = id;
+        routine->name = name;
+        routine->priority = priority;
+
+        // QDate::dayOfWeek() returns (1 = Mon to 7 = Sun), which means first day is '1'.
+        // Algorithms are tweaked to fit concept where first day is '7', which is Sun.
+        if (type == "Daily") {
+            grpDaily->content.append(routine);
+        } else if (type == "Weekly") {
+            date = date.addDays(-3);
+            int dayOfWeek = date.dayOfWeek();
+            int offset = dayOfWeek % 7;  // When dayOfWeek is Mon to Sat (1-6), the resultant value will also be that value, and be used to subtract the routineStartDate. When the dayOfWeek is Sun (7), the resultant value will instead be 0, which supports the logic where the routineStartDate doesn't need to be subtracted if it's already on Sun (the first date of the week).
+            QDate sunDate = date.addDays(-offset);  // Offset the supplied date (from argument) to get the first date of the week (Sun).
+            QDate satDate = sunDate.addDays(6);  // The last date of the week (Sat) is always 6 days away from the first day of the week (Sun).
+            bool found = hasRecordInRange(sunDate, satDate);
+            if (!found) grpWeekly->content.append(routine);
+        } else if (type == "Biweekly") {
+            QDate routineStartDate = QDate::fromString(type_param, "dd MMM yyyy");
+            if (!routineStartDate.isValid()) {
+                QMessageBox::critical(this, "Computation Error", "Invalid month found");
+                return routineGrps;
+            }
+            int dayOfWeek = routineStartDate.dayOfWeek();
+            int offset = dayOfWeek % 7;  // When dayOfWeek is Mon to Sat (1-6), the resultant value will also be that value, and be used to subtract the routineStartDate. When the dayOfWeek is Sun (7), the resultant value will instead be 0, which supports the logic where the routineStartDate doesn't need to be subtracted if it's already on Sun (the first date of the biweek).
+            QDate startDateOfBiweeks = routineStartDate.addDays(-offset);  // startDateOfBiweeks = First day of biweek of routine start date (Sun).
+            qint64 daysToDate = startDateOfBiweeks.daysTo(date);
+            qint64 weeksToStartDate = daysToDate / 14;  // 1 biweek = 14 days. Since the current biweek hasn't reached 14 days, it will not be counted into the biweek interval count between the start date of the first biweek and the start date of the current biweek.
+            qint64 daysToStartDate = weeksToStartDate * 14;
+            QDate firstDateOfBiweek = startDateOfBiweeks.addDays(daysToStartDate);
+            QDate lastDateOfBiweek = startDateOfBiweeks.addDays(daysToStartDate + 13);  // Excluding the start date of biweek of supplied date (from argument), there are only 13 days left to reach the last date of the biweek of the supplied date.
+            bool found = hasRecordInRange(firstDateOfBiweek, lastDateOfBiweek);
+            if (!found) grpBiweekly->content.append(routine);
+        } else if (type == "Monthly") {
+            int year = date.year();
+            int month = date.month();
+            int dayCount = date.daysInMonth();
+            QDate firstDateOfMonth = QDate(year, month, 1);  // First day of month is always 1.
+            QDate lastDateOfMonth = QDate(year, month, dayCount);  // Last day of month is equivalent to the day count of month.
+            bool found = hasRecordInRange(firstDateOfMonth, lastDateOfMonth);
+            if (!found) grpMonthly->content.append(routine);
+        } else if (type == "Quarterly") {
+            int year = date.year();
+            int month = date.month();
+            QDate firstDateOfQuarter;
+            QDate lastDateOfQuarter;
+            if (month >= 1 && month <= 3) {
+                firstDateOfQuarter = QDate(year, 1, 1);  // First day of first quarter of year is always 1st Jan (1).
+                lastDateOfQuarter = QDate(year, 3, 31);  // Last day of first quarter of year is always 31st Mar (3).
+            } else if (month >= 4 && month <= 6) {
+                firstDateOfQuarter = QDate(year, 4, 1);  // First day of second quarter of year is always 1st Apr (4).
+                lastDateOfQuarter = QDate(year, 6, 30);  // Last day of second quarter of year is always 30th Jun (6).
+            } else if (month >= 7 && month <= 9) {
+                firstDateOfQuarter = QDate(year, 7, 1);  // First day of third quarter of year is always 1st Jul (7).
+                lastDateOfQuarter = QDate(year, 9, 30);  // Last day of third quarter of year is always 30th Sep (9).
+            } else if (month >= 10 && month <= 12) {
+                firstDateOfQuarter = QDate(year, 10, 1);  // First day of fourth quarter of year is always 1st Oct (10).
+                lastDateOfQuarter = QDate(year, 12, 31);  // Last day of fourth quarter of year is always 31st Dec (12).
+            } else {
+                QMessageBox::critical(this, "Computation Error", "Invalid month found");
+                return routineGrps;
+            }
+            if (!firstDateOfQuarter.isValid() || !lastDateOfQuarter.isValid()) {
+                QMessageBox::critical(this, "Computation Error", "Null date found");
+                return routineGrps;
+            }
+            bool found = hasRecordInRange(firstDateOfQuarter, lastDateOfQuarter);
+            if (!found) grpQuarterly->content.append(routine);
+        } else if (type == "Semiannually") {
+            int year = date.year();
+            int month = date.month();
+            QDate firstDateOfSemiannual;
+            QDate lastDateOfSemiannual;
+            if (month >= 1 && month <= 6) {
+                firstDateOfSemiannual = QDate(year, 1, 1);  // First day of first half of year is always 1st Jan (1).
+                lastDateOfSemiannual = QDate(year, 6, 30);  // Last day of first half of year is always 30th Jun (6).
+            } else if (month >= 7 && month <= 12) {
+                firstDateOfSemiannual = QDate(year, 7, 1);  // First day of second half of year is always 1st Jul (7).
+                lastDateOfSemiannual = QDate(year, 12, 31);  // Last day of second half of year is always 31st Dec (12).
+            } else {
+                QMessageBox::critical(this, "Computation Error", "Invalid month found");
+                return routineGrps;
+            }
+            if (!firstDateOfSemiannual.isValid() || !lastDateOfSemiannual.isValid()) {
+                QMessageBox::critical(this, "Computation Error", "Null date found");
+                return routineGrps;
+            }
+            bool found = hasRecordInRange(firstDateOfSemiannual, lastDateOfSemiannual);
+            if (!found) grpSemiannually->content.append(routine);
+        } else if (type == "Annually") {
+            int year = date.year();
+            QDate firstDateOfYear = QDate(year, 1, 1);  // First day of year is always 1st Jan (1).
+            QDate lastDateOfYear = QDate(year, 12, 31);  // Last day of year is always 31st Dec (12).
+            bool found = hasRecordInRange(firstDateOfYear, lastDateOfYear);
+            if (!found) grpAnnually->content.append(routine);
+        } else if (type == "Day") {
+            QString month = date.toString("ddd");
+            QStringList days = type_param.split(", ");
+            if (!days.contains(month)) continue;
+            bool found = hasRecordInRange(date, date);
+            if (!found) grpDay->content.append(routine);
+        } else if (type == "Interval") {
+            QStringList temp = type_param.split(", ");
+            if (temp.count() != 2) {
+                QMessageBox::critical(this, "Computation Error", "Incorrect parameter found");
+                return routineGrps;
+            }
+            int interval = temp[0].toInt();
+            if (interval == 0) {
+                QMessageBox::critical(this, "Computation Error", "Invalid parameter found");
+                return routineGrps;
+            }
+            QDate routineStartDate = QDate::fromString(temp[1], Qt::RFC2822Date);
+            if (!routineStartDate.isValid()) {
+                QMessageBox::critical(this, "Computation Error", "Invalid parameter found");
+                return routineGrps;
+            }
+            int delta = routineStartDate.daysTo(date);
+            int result = delta % interval;
+            if (result != 0) continue;
+            bool found = hasRecordInRange(date, date);
+            if (!found) grpInterval->content.append(routine);
+        } else {
+            QMessageBox::critical(this, "Db Error", "Unidentified type found");
+            return routineGrps;
         }
     }
-    {
-        QString startDate = QDate::currentDate().addDays(-7).toString(Qt::ISODate);
-        QString endDate = QDate::currentDate().toString(Qt::ISODate);
-        QSqlQuery query;
-        query.setForwardOnly(true);
-        query.prepare(
-            "SELECT date, routine_id "
-            "FROM records "
-            "WHERE date BETWEEN :start_date AND :end_date "
-            "ORDER BY date ASC");
-        query.bindValue(":start_date", startDate);
-        query.bindValue(":end_date", endDate);
-        bool ok = query.exec();
-        if (!ok) {
-            QMessageBox::critical(this, "Db Error", query.lastError().text());
-            return;
+
+    // Remove groups with no routines.
+    for (int i=0; i<routineGrps.size();) {
+        RoutineGroup* grp = routineGrps[i];
+        if (grp->content.isEmpty()) {
+            delete grp;
+            routineGrps.removeAt(i);
+        } else {
+            ++i;
         }
-        while (query.next()) {
-            QDate date = QDate::fromString(query.value(0).toString(), Qt::ISODate);
-            int routine_id = query.value(1).toLongLong();
-            qDebug() << "date: " << date << "  routine_id: " << routine_id;
-        }
+    }
+
+    return routineGrps;
+}
+
+bool MainWindow::hasRecordInRange(QDate startDate, QDate endDate) {
+    QString startDateStr = startDate.toString(Qt::ISODate);
+    QString endDateStr = endDate.toString(Qt::ISODate);
+    QSqlQuery query;
+    query.setForwardOnly(true);
+    query.prepare(
+        "SELECT EXISTS("
+        "SELECT 1 "
+        "FROM records "
+        "WHERE date >= :startDate "
+        "AND date <= :endDate);"
+        );
+    query.bindValue(":startDate", startDateStr);
+    query.bindValue(":endDate", endDateStr);
+    bool ok = query.exec();
+    qDebug() << "Executed Query: " << query.executedQuery();
+    qDebug() << "Bound Values: " << query.boundValues();
+    if (!ok) {
+        QMessageBox::critical(this, "Db Error", query.lastError().text());
+    }
+    qDebug() << "Result Set: ";
+    while (query.next()) {
+        int found = query.value(0).toInt();
+        qDebug() << found;
+    }
+    return 0;
+}
+
+void MainWindow::tray_clicked(QSystemTrayIcon::ActivationReason reason) {
+    if (reason == QSystemTrayIcon::Trigger) {  // The icon is clicked.
+        show();
+        raise();
+        activateWindow();
     }
 }
+
+void MainWindow::trayExitAction_clicked(bool /*checked*/) {
+    forceExit = true;
+    qApp -> quit();
+}
+

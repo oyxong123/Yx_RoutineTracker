@@ -46,22 +46,27 @@ void RoutineDialog_Add::cbType_currentIndexChanged(int /*index*/)
         ui->lblTypeParam->setText("Selected Days :");
         ui->contTypeParam->setCurrentIndex(0);
         ui->lblTypeParam->show();
+        ui->lblTypeParam_2->hide();
         ui->contTypeParam->show();
     } else if (currentText == "Biweekly") {
         setFixedHeight(270);
-        ui->lblTypeParam->setText("Start Date :");
+        ui->lblTypeParam->setText("Start Week :");
         ui->contTypeParam->setCurrentIndex(1);
         ui->lblTypeParam->show();
+        ui->lblTypeParam_2->hide();
         ui->contTypeParam->show();
     } else if (currentText == "Interval"){
-        setFixedHeight(125);
-        ui->lblTypeParam->setText("Every N Days :");
+        setFixedHeight(295);
+        ui->lblTypeParam->setText("Every Nth Day :");
+        ui->lblTypeParam_2->setText("Start Date :");
         ui->contTypeParam->setCurrentIndex(2);
         ui->lblTypeParam->show();
+        ui->lblTypeParam_2->show();
         ui->contTypeParam->show();
     } else {
         setFixedHeight(95);
         ui->lblTypeParam->hide();
+        ui->lblTypeParam_2->hide();
         ui->contTypeParam->hide();
     }
 }
@@ -73,12 +78,12 @@ void RoutineDialog_Add::btnAdd_clicked()
     int is_active = 1;
 
     QString type_param = nullptr;
-    if (type == "Day"){
+    if (type == "Day") {
         QString selectedDays;
         if (ui->chkMon->checkState() != Qt::Unchecked) selectedDays += "Mon, ";
-        if (ui->chkTues->checkState() != Qt::Unchecked) selectedDays += "Tues, ";
+        if (ui->chkTues->checkState() != Qt::Unchecked) selectedDays += "Tue, ";
         if (ui->chkWed->checkState() != Qt::Unchecked) selectedDays += "Wed, ";
-        if (ui->chkThurs->checkState() != Qt::Unchecked) selectedDays += "Thurs, ";
+        if (ui->chkThurs->checkState() != Qt::Unchecked) selectedDays += "Thu, ";
         if (ui->chkFri->checkState() != Qt::Unchecked) selectedDays += "Fri, ";
         if (ui->chkSat->checkState() != Qt::Unchecked) selectedDays += "Sat, ";
         if (ui->chkSun->checkState() != Qt::Unchecked) selectedDays += "Sun, ";
@@ -87,11 +92,12 @@ void RoutineDialog_Add::btnAdd_clicked()
         qDebug() << selectedDays;
         qDebug() << type_param;
     } else if (type == "Biweekly") {
-        QString selectedDate = ui->calBiweekly->selectedDate().toString();
+        QString selectedDate = ui->calBiweekly->selectedDate().toString(Qt::RFC2822Date);
         type_param = selectedDate;
-    } else if (type == "Interval"){
+    } else if (type == "Interval") {
         QString enteredInterval = ui->sbInterval->text();
-        type_param = enteredInterval;
+        QString selectedDate = ui->calInterval->selectedDate().toString(Qt::RFC2822Date);
+        type_param = enteredInterval + ", " + selectedDate;
     }
 
     int priority = 0;
