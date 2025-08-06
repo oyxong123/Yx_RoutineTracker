@@ -14,8 +14,6 @@ HistoryDialog_Search::HistoryDialog_Search(QWidget *parent)
         QMessageBox::critical(this, "App Error", "Parent is not a MainWindow!");
     }
 
-    QObject::connect(ui->btnHome, &QPushButton::clicked, this, &HistoryDialog_Search::btnHome_clicked);
-
     initialize();
 
     qDebug() << "History Dialog (Search) initialized";
@@ -26,14 +24,15 @@ HistoryDialog_Search::~HistoryDialog_Search()
     delete ui;
 }
 
+void HistoryDialog_Search::closeEvent(QCloseEvent *event)
+{
+    mw->initializeFromOutside();
+    mw->show();
+
+    QDialog::closeEvent(event);
+}
+
 void HistoryDialog_Search::initialize()
 {
 
-}
-
-void HistoryDialog_Search::btnHome_clicked()
-{
-    close();
-    mw->show();
-    mw->initializeFromOutside();
 }

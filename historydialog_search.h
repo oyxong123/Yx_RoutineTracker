@@ -17,8 +17,10 @@ public:
     explicit HistoryDialog_Search(QWidget *parent = nullptr);
     ~HistoryDialog_Search();
 
+protected:
+    void closeEvent(QCloseEvent *event) override;
+
 private slots:
-    void btnHome_clicked();
 
 private:
     Ui::HistoryDialog_Search *ui;

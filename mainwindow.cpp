@@ -69,11 +69,10 @@ void MainWindow::initialize()
 
     // Reset UI.
     QList<QWidget*> children = ui->contRoutines->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
-    for (QWidget* child : children) delete child;
+    for (const QWidget* child : children) delete child;
 
     QList<RoutineGroup*> routineGrps = getRoutineOfDate(displayDate);
     int routineGrpX = 0;
-    int sepX = 0;
     int routineX = 90;
     int firstY = 0;
     int spacing = 0;
@@ -91,12 +90,10 @@ void MainWindow::initialize()
             chk->move(routineX, firstY + spacing);
             chk->show();
 
-            if (j < grpSize - 1) {
-                spacing += 22;  // Only add spacing if not last routine.
-            }
+            if (j < grpSize - 1) spacing += 22;  // Add spacing if not the last routine.
         }
 
-        if (i < grpsSize - 1) spacing += 32;
+        if (i < grpsSize - 1) spacing += 32;  // Add spacing if not the last routine.
     }
 
     ui->contRoutines->setFixedHeight(defaultContHeight + spacing);
@@ -325,13 +322,17 @@ QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)
         }
     }
 
-    // Remove groups with no routines.
+    // Remove groups with no routines and sort routines in each routine group based on their priority.
     for (int i=0; i<routineGrps.size();) {
         RoutineGroup* grp = routineGrps[i];
-        if (grp->content.isEmpty()) {
+        QList<Routine*>& routines = grp->content;  // '&' must be used to sort the actual data insteda of the copy of the content.
+        if (routines.isEmpty()) {
             delete grp;
             routineGrps.removeAt(i);
         } else {
+            std::sort(routines.begin(), routines.end(), [](const Routine* a, const Routine* b) {
+                return a->priority < b->priority;
+            });
             ++i;
         }
     }
