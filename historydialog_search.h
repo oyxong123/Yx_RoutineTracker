@@ -21,11 +21,15 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private slots:
+    void btnSearch_clicked();
+    void chkRange_clicked();
+    void de_dateChanged();
+    void cbPreset_changed();
 
 private:
     Ui::HistoryDialog_Search *ui;
     MainWindow *mw;
-    void initialize();
+    bool isCustom = false;
 };
 
 #endif // HISTORYDIALOG_SEARCH_H

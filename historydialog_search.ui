@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>History Search</string>
   </property>
-  <widget class="QComboBox" name="cbType">
+  <widget class="QComboBox" name="cbPreset">
    <property name="geometry">
     <rect>
      <x>70</x>
@@ -24,52 +24,42 @@
    </property>
    <item>
     <property name="text">
-     <string>All</string>
+     <string>Today</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>Daily</string>
+     <string>Past Week</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>Weekly</string>
+     <string>Past 2 Weeks</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>Biweekly</string>
+     <string>This Week</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>Monthly</string>
+     <string>This Month</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>Quarterly</string>
+     <string>This Quarter</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>Semiannually</string>
+     <string>This Half-Year</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>Annually</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>Day</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>Interval</string>
+     <string>This Year</string>
     </property>
    </item>
   </widget>
@@ -83,7 +73,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Type :</string>
+    <string>Preset :</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -125,6 +115,9 @@
    </property>
   </widget>
   <widget class="QDateEdit" name="deEndDate">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>200</x>
@@ -170,6 +163,22 @@
    </property>
    <property name="text">
     <string>Range</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnSearch">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>20</y>
+     <width>24</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::SystemSearch"/>
    </property>
   </widget>
  </widget>
