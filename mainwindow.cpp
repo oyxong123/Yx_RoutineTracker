@@ -74,7 +74,6 @@ void MainWindow::initialize()
     QList<RoutineGroup*> routineGrps = getRoutineOfDate(displayDate);
     int routineGrpX = 0;
     int sepX = 0;
-    int semicolonX = 75;
     int routineX = 90;
     int firstY = 0;
     int spacing = 0;
@@ -84,10 +83,6 @@ void MainWindow::initialize()
         QLabel* lbl = new QLabel(routineGrp->name + " :", ui->contRoutines);
         lbl->move(routineGrpX, firstY + spacing);
         lbl->show();
-
-        // QLabel* lblSemicolon = new QLabel(":", ui->contRoutines);
-        // lblSemicolon->move(semicolonX, firstY + spacing);
-        // lblSemicolon->show();
 
         int grpSize = routineGrp->content.size();
         for (int j = 0; j < grpSize; ++j) {
@@ -101,19 +96,11 @@ void MainWindow::initialize()
             }
         }
 
-        spacing += 20;
-
-        if (i < grpsSize - 1) {
-            QLabel* lblSep = new QLabel("----------------------------------------------------", ui->contRoutines);
-            lblSep->move(sepX, firstY + spacing);
-            lblSep->show();
-        }
-        spacing += 20;
+        if (i < grpsSize - 1) spacing += 32;
     }
 
-    int offset = 40;  // Value to offset the final 30px of unecessary spacing added during the last iteration.
-    ui->contRoutines->setFixedHeight(defaultContHeight + spacing - offset);
-    this->setFixedHeight(defaultWindowHeight + spacing - offset);
+    ui->contRoutines->setFixedHeight(defaultContHeight + spacing);
+    this->setFixedHeight(defaultWindowHeight + spacing);
     centerWindow();
     qDebug() << "Main Window initialized";
 }

@@ -28,7 +28,7 @@ HistoryDialog_Search::~HistoryDialog_Search()
 
 void HistoryDialog_Search::initialize()
 {
-    ui->
+
 }
 
 void HistoryDialog_Search::btnHome_clicked()
