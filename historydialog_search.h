@@ -1,6 +1,8 @@
 #ifndef HISTORYDIALOG_SEARCH_H
 #define HISTORYDIALOG_SEARCH_H
 
+#include "mainwindow.h"
+
 #include <QDialog>
 
 namespace Ui {
@@ -15,8 +17,13 @@ public:
     explicit HistoryDialog_Search(QWidget *parent = nullptr);
     ~HistoryDialog_Search();
 
+private slots:
+    void btnHome_clicked();
+
 private:
     Ui::HistoryDialog_Search *ui;
+    MainWindow *mw;
+    void initialize();
 };
 
 #endif // HISTORYDIALOG_SEARCH_H

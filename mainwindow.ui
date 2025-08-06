@@ -30,7 +30,7 @@
      <string/>
     </property>
     <property name="icon">
-     <iconset theme="QIcon::ThemeIcon::DocumentProperties"/>
+     <iconset theme="QIcon::ThemeIcon::SystemSearch"/>
     </property>
    </widget>
    <widget class="QLabel" name="lblDate">
@@ -53,9 +53,9 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>60</y>
-      <width>251</width>
-      <height>40</height>
+      <y>70</y>
+      <width>261</width>
+      <height>21</height>
      </rect>
     </property>
    </widget>

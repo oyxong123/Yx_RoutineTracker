@@ -2,6 +2,7 @@
 #include "routinedialog.h"
 #include "ui_mainwindow.h"
 #include "routinestruct.h"
+#include "historydialog_search.h"
 
 #include <QDebug>
 #include <QSqlError>
@@ -71,25 +72,46 @@ void MainWindow::initialize()
     for (QWidget* child : children) delete child;
 
     QList<RoutineGroup*> routineGrps = getRoutineOfDate(displayDate);
-    int firstX = 0;
+    int routineGrpX = 0;
+    int sepX = 0;
+    int semicolonX = 75;
+    int routineX = 90;
     int firstY = 0;
     int spacing = 0;
-    for (const RoutineGroup* routineGrp : routineGrps) {
-        QLabel* lbl = new QLabel(routineGrp->name, ui->contRoutines);
-        lbl->move(firstX, firstY + spacing);
+    int grpsSize = routineGrps.size();
+    for (int i = 0; i < grpsSize; ++i) {
+        const RoutineGroup* routineGrp = routineGrps[i];
+        QLabel* lbl = new QLabel(routineGrp->name + " :", ui->contRoutines);
+        lbl->move(routineGrpX, firstY + spacing);
         lbl->show();
 
-        for (const Routine* routine: routineGrp->content) {
-            spacing += 20;
+        // QLabel* lblSemicolon = new QLabel(":", ui->contRoutines);
+        // lblSemicolon->move(semicolonX, firstY + spacing);
+        // lblSemicolon->show();
+
+        int grpSize = routineGrp->content.size();
+        for (int j = 0; j < grpSize; ++j) {
+            const Routine* routine = routineGrp->content[j];
             QCheckBox *chk = new QCheckBox(routine->name, ui->contRoutines);
-            chk->move(firstX, firstY + spacing);
+            chk->move(routineX, firstY + spacing);
             chk->show();
+
+            if (j < grpSize - 1) {
+                spacing += 22;  // Only add spacing if not last routine.
+            }
         }
 
-        spacing += 30;
+        spacing += 20;
+
+        if (i < grpsSize - 1) {
+            QLabel* lblSep = new QLabel("----------------------------------------------------", ui->contRoutines);
+            lblSep->move(sepX, firstY + spacing);
+            lblSep->show();
+        }
+        spacing += 20;
     }
 
-    int offset = 40;  // Value to offset the final 30px of unecessary spacing added during the last iteration. (plus something else I don't know to be transparent)
+    int offset = 40;  // Value to offset the final 30px of unecessary spacing added during the last iteration.
     ui->contRoutines->setFixedHeight(defaultContHeight + spacing - offset);
     this->setFixedHeight(defaultWindowHeight + spacing - offset);
     centerWindow();
@@ -149,7 +171,9 @@ void MainWindow::btnRoutine_clicked()
 
 void MainWindow::btnHistory_clicked()
 {
-    initialize();
+    hide();
+    HistoryDialog_Search *hds = new HistoryDialog_Search(this);
+    hds->show();
 }
 
 QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)

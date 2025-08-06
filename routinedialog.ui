@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Routines</string>
+   <string>Routine</string>
   </property>
   <widget class="QTreeWidget" name="treRoutine">
    <property name="geometry">
