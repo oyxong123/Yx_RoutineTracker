@@ -14,7 +14,7 @@ class HistoryDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit HistoryDialog(QWidget *parent = nullptr);
+    explicit HistoryDialog(const QDate &startDate, const QDate &endDate, QWidget *parent = nullptr);
     ~HistoryDialog();
 
 protected:
@@ -26,7 +26,12 @@ private slots:
 private:
     Ui::HistoryDialog *ui;
     MainWindow *mw;
+    QDate startDate;
+    QDate endDate;
+    QMap<qint64, int> routineIdToRowIdx;
     void initialize();
+    void insertRoutines();
+    void insertRecords();
 };
 
 #endif // HISTORYDIALOG_H

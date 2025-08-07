@@ -1,8 +1,12 @@
 #include "historydialog_search.h"
 #include "ui_historydialog_search.h"
 #include "mainwindow.h"
+#include "historydialog.h"
 
 #include <QMessageBox>
+#include <QTimer>
+#include <QSqlQuery>
+#include <QSqlError>
 
 HistoryDialog_Search::HistoryDialog_Search(QWidget *parent)
     : QDialog(parent)
@@ -27,7 +31,6 @@ HistoryDialog_Search::HistoryDialog_Search(QWidget *parent)
     QObject::connect(ui->deEndDate, &QDateTimeEdit::dateChanged, this, &HistoryDialog_Search::de_dateChanged);
     QObject::connect(ui->cbPreset, &QComboBox::currentIndexChanged, this, &HistoryDialog_Search::cbPreset_changed);
 
-
     qDebug() << "History Dialog (Search) initialized";
 }
 
@@ -38,15 +41,23 @@ HistoryDialog_Search::~HistoryDialog_Search()
 
 void HistoryDialog_Search::closeEvent(QCloseEvent *event)
 {
-    mw->initializeFromOutside();
-    mw->show();
+    if (isDeleteFromCloseButton) {
+        mw->initializeFromOutside();
+        mw->show();
+    }
 
     QDialog::closeEvent(event);
 }
 
 void HistoryDialog_Search::btnSearch_clicked()
 {
+    QDate startDate = ui->deStartDate->date();
+    QDate endDate = ui->deEndDate->date();
 
+    isDeleteFromCloseButton = false;
+    close();
+    HistoryDialog *hd = new HistoryDialog(startDate, endDate, mw);
+    hd->show();
 }
 
 void HistoryDialog_Search::chkRange_clicked()

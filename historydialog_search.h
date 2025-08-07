@@ -30,6 +30,7 @@ private:
     Ui::HistoryDialog_Search *ui;
     MainWindow *mw;
     bool isCustom = false;
+    bool isDeleteFromCloseButton = true;
 };
 
 #endif // HISTORYDIALOG_SEARCH_H
