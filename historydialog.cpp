@@ -130,12 +130,26 @@ void HistoryDialog::insertRoutines()
         }
     }
 
+    // Remove groups with no routines and sort routines in each routine group based on their priority.
+    for (int i=0; i<routineGrps.size();) {
+        RoutineGroup* grp = routineGrps[i];
+        QList<Routine*>& routines = grp->content;  // '&' must be used to sort the actual data insteda of the copy of the content.
+        if (routines.isEmpty()) {
+            delete grp;
+            routineGrps.removeAt(i);
+        } else {
+            std::sort(routines.begin(), routines.end(), [](const Routine* a, const Routine* b) {
+                return a->priority < b->priority;
+            });
+            ++i;
+        }
+    }
+
     // Set routine types and routines to vertical header.
     int currentRowIdx = 0;
     QStringList vHeaders;
     for (int i=0; i<routineGrps.size(); i++) {
         RoutineGroup* routineGrp = routineGrps[i];
-        if (routineGrp->content.isEmpty()) continue;  // Skip adding the routine type to the table if there's no routine in it.
         QString headerSpace = "";
         vHeaders.append(headerSpace);
         ++currentRowIdx;
