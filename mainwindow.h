@@ -36,6 +36,7 @@ private slots:
     void btnHistory_clicked();
     void tray_clicked(QSystemTrayIcon::ActivationReason reason);
     void trayExitAction_clicked(bool checked);
+    void chkRoutine_checked(Qt::CheckState state);
 
 private:
     Ui::MainWindow *ui;

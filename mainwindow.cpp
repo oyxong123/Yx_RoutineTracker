@@ -67,7 +67,7 @@ void MainWindow::initialize()
     int defaultContHeight = 40;
     int defaultWindowHeight = 110;
 
-    // Reset UI.
+    // Reset UI (automatically disconnect signals from deleted widgets).
     QList<QWidget*> children = ui->contRoutines->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
     for (const QWidget* child : children) delete child;
 
@@ -87,6 +87,8 @@ void MainWindow::initialize()
         for (int j = 0; j < grpSize; ++j) {
             const Routine* routine = routineGrp->content[j];
             QCheckBox *chk = new QCheckBox(routine->name, ui->contRoutines);
+            chk->setProperty("routine_id", routine->id);  // Store the routine's id for other usage.
+            QObject::connect(chk, &QCheckBox::checkStateChanged, this, &MainWindow::chkRoutine_checked);
             chk->move(routineX, firstY + spacing);
             chk->show();
 
@@ -202,7 +204,8 @@ QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)
         // QDate::dayOfWeek() returns (1 = Mon to 7 = Sun), which means first day is '1'.
         // Algorithms are tweaked to fit concept where first day is '7', which is Sun.
         if (type == "Daily") {
-            grpDaily->content.append(routine);
+            bool found = hasRecordInRange(date, date);
+            if (!found) grpDaily->content.append(routine);
         } else if (type == "Weekly") {
             date = date.addDays(-3);
             int dayOfWeek = date.dayOfWeek();
@@ -340,7 +343,8 @@ QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)
     return routineGrps;
 }
 
-bool MainWindow::hasRecordInRange(QDate startDate, QDate endDate) {
+bool MainWindow::hasRecordInRange(QDate startDate, QDate endDate)
+{
     QString startDateStr = startDate.toString(Qt::ISODate);
     QString endDateStr = endDate.toString(Qt::ISODate);
     QSqlQuery query;
@@ -368,7 +372,8 @@ bool MainWindow::hasRecordInRange(QDate startDate, QDate endDate) {
     return 0;
 }
 
-void MainWindow::tray_clicked(QSystemTrayIcon::ActivationReason reason) {
+void MainWindow::tray_clicked(QSystemTrayIcon::ActivationReason reason)
+{
     if (reason == QSystemTrayIcon::Trigger) {  // The icon is clicked.
         show();
         raise();
@@ -376,8 +381,86 @@ void MainWindow::tray_clicked(QSystemTrayIcon::ActivationReason reason) {
     }
 }
 
-void MainWindow::trayExitAction_clicked(bool /*checked*/) {
+void MainWindow::trayExitAction_clicked(bool /*checked*/)
+{
     forceExit = true;
     qApp -> quit();
 }
 
+void MainWindow::chkRoutine_checked(Qt::CheckState state)
+{
+    QCheckBox* cb = qobject_cast<QCheckBox*>(sender());  // sender() returns the pointer to the checkbox that emitted the signal.
+    if (!cb) {
+        QMessageBox::critical(this, "GUI Error", "Checkbox not found");
+        return;
+    }
+    QString date = displayDate.toString(Qt::ISODate);
+    int routine_id = cb->property("routine_id").toInt();
+    if (routine_id == 0) {  // Either the property is invalid or the converstion to int has failed.
+        QMessageBox::critical(this, "Computation Error", "Property invalid or routine_id not found");
+        return;
+    }
+
+    // Verify whether the checkstate displayed on the GUI has the same state stored in db.
+    {
+        QSqlQuery query;
+        query.setForwardOnly(true);
+        query.prepare(
+            "SELECT EXISTS("
+            "SELECT 1 "
+            "FROM records "
+            "WHERE date=:date "
+            "AND routine_id=:routine_id);"
+            );
+        query.bindValue(":date", date);
+        query.bindValue(":routine_id", routine_id);
+        bool ok = query.exec();
+        qDebug() << "Executed Query: " << query.executedQuery();
+        qDebug() << "Bound Values: " << query.boundValues();
+        if (!ok) {
+            QMessageBox::critical(this, "Db Error", query.lastError().text());
+        }
+        qDebug() << "Result Set: ";
+        while (query.next()) {
+            int found = query.value(0).toInt();
+            qDebug() << found;
+
+            if (state == Qt::Unchecked && !found) {  // Invalid if initial checkstate is 'checked', but there's no record in db.
+                QMessageBox::critical(this, "Db Sync Error", "Invalid db/checkbox state found");
+                return;
+            } else if (state != Qt::Unchecked && found) {  // Invalid if initial checkstate is 'unchecked', but there's record in db.
+                QMessageBox::critical(this, "Db Sync Error", "Invalid db/checkbox state found");
+                return;
+            }
+        }
+    }
+
+    if (state == Qt::Unchecked) {
+        QSqlQuery query;
+        query.prepare("DELETE from records "
+                      "WHERE date=:date "
+                      "AND routine_id=:routine_id;");
+        query.bindValue(":date", date);
+        query.bindValue(":routine_id", routine_id);
+        bool ok = query.exec();
+        qDebug() << "Executed Query: " << query.executedQuery();
+        qDebug() << "Bound Values: " << query.boundValues();
+        if (!ok) {
+            QMessageBox::critical(this, "Db Error", query.lastError().text());
+            return;
+        }
+    } else {
+        QSqlQuery query;
+        query.prepare("INSERT INTO records (date, routine_id) "
+                      "VALUES (:date, :routine_id)");
+        query.bindValue(":date", date);
+        query.bindValue(":routine_id", routine_id);
+        bool ok = query.exec();
+        qDebug() << "Executed Query: " << query.executedQuery();
+        qDebug() << "Bound Values: " << query.boundValues();
+        if (!ok) {
+            QMessageBox::critical(this, "Db Error", query.lastError().text());
+            return;
+        }
+    }
+}
