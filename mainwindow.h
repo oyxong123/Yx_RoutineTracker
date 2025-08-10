@@ -46,6 +46,6 @@ private:
     void initialize();
     void centerWindow();
     bool forceExit = false;
-    bool hasRecordInRange(QDate startDate, QDate endDate);
+    bool hasRecordInRange(int routine_id, QDate startDate, QDate endDate);
 };
 #endif // MAINWINDOW_H

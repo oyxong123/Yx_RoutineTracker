@@ -97,6 +97,7 @@ void MainWindow::initialize()
 
         if (i < grpsSize - 1) spacing += 32;  // Add spacing if not the last routine.
     }
+    if (grpsSize == 0) spacing -= 32;
 
     ui->contRoutines->setFixedHeight(defaultContHeight + spacing);
     this->setFixedHeight(defaultWindowHeight + spacing);
@@ -204,15 +205,14 @@ QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)
         // QDate::dayOfWeek() returns (1 = Mon to 7 = Sun), which means first day is '1'.
         // Algorithms are tweaked to fit concept where first day is '7', which is Sun.
         if (type == "Daily") {
-            bool found = hasRecordInRange(date, date);
+            bool found = hasRecordInRange(id, date, date);
             if (!found) grpDaily->content.append(routine);
         } else if (type == "Weekly") {
-            date = date.addDays(-3);
             int dayOfWeek = date.dayOfWeek();
             int offset = dayOfWeek % 7;  // When dayOfWeek is Mon to Sat (1-6), the resultant value will also be that value, and be used to subtract the routineStartDate. When the dayOfWeek is Sun (7), the resultant value will instead be 0, which supports the logic where the routineStartDate doesn't need to be subtracted if it's already on Sun (the first date of the week).
             QDate sunDate = date.addDays(-offset);  // Offset the supplied date (from argument) to get the first date of the week (Sun).
             QDate satDate = sunDate.addDays(6);  // The last date of the week (Sat) is always 6 days away from the first day of the week (Sun).
-            bool found = hasRecordInRange(sunDate, satDate);
+            bool found = hasRecordInRange(id, sunDate, satDate);
             if (!found) grpWeekly->content.append(routine);
         } else if (type == "Biweekly") {
             QDate routineStartDate = QDate::fromString(type_param, "dd MMM yyyy");
@@ -228,7 +228,7 @@ QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)
             qint64 daysToStartDate = weeksToStartDate * 14;
             QDate firstDateOfBiweek = startDateOfBiweeks.addDays(daysToStartDate);
             QDate lastDateOfBiweek = startDateOfBiweeks.addDays(daysToStartDate + 13);  // Excluding the start date of biweek of supplied date (from argument), there are only 13 days left to reach the last date of the biweek of the supplied date.
-            bool found = hasRecordInRange(firstDateOfBiweek, lastDateOfBiweek);
+            bool found = hasRecordInRange(id, firstDateOfBiweek, lastDateOfBiweek);
             if (!found) grpBiweekly->content.append(routine);
         } else if (type == "Monthly") {
             int year = date.year();
@@ -236,7 +236,7 @@ QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)
             int dayCount = date.daysInMonth();
             QDate firstDateOfMonth = QDate(year, month, 1);  // First day of month is always 1.
             QDate lastDateOfMonth = QDate(year, month, dayCount);  // Last day of month is equivalent to the day count of month.
-            bool found = hasRecordInRange(firstDateOfMonth, lastDateOfMonth);
+            bool found = hasRecordInRange(id, firstDateOfMonth, lastDateOfMonth);
             if (!found) grpMonthly->content.append(routine);
         } else if (type == "Quarterly") {
             int year = date.year();
@@ -263,7 +263,7 @@ QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)
                 QMessageBox::critical(this, "Computation Error", "Null date found");
                 return routineGrps;
             }
-            bool found = hasRecordInRange(firstDateOfQuarter, lastDateOfQuarter);
+            bool found = hasRecordInRange(id, firstDateOfQuarter, lastDateOfQuarter);
             if (!found) grpQuarterly->content.append(routine);
         } else if (type == "Semiannually") {
             int year = date.year();
@@ -284,19 +284,19 @@ QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)
                 QMessageBox::critical(this, "Computation Error", "Null date found");
                 return routineGrps;
             }
-            bool found = hasRecordInRange(firstDateOfSemiannual, lastDateOfSemiannual);
+            bool found = hasRecordInRange(id, firstDateOfSemiannual, lastDateOfSemiannual);
             if (!found) grpSemiannually->content.append(routine);
         } else if (type == "Annually") {
             int year = date.year();
             QDate firstDateOfYear = QDate(year, 1, 1);  // First day of year is always 1st Jan (1).
             QDate lastDateOfYear = QDate(year, 12, 31);  // Last day of year is always 31st Dec (12).
-            bool found = hasRecordInRange(firstDateOfYear, lastDateOfYear);
+            bool found = hasRecordInRange(id, firstDateOfYear, lastDateOfYear);
             if (!found) grpAnnually->content.append(routine);
         } else if (type == "Day") {
             QString month = date.toString("ddd");
             QStringList days = type_param.split(", ");
             if (!days.contains(month)) continue;
-            bool found = hasRecordInRange(date, date);
+            bool found = hasRecordInRange(id, date, date);
             if (!found) grpDay->content.append(routine);
         } else if (type == "Interval") {
             QStringList temp = type_param.split(", ");
@@ -317,7 +317,7 @@ QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)
             int delta = routineStartDate.daysTo(date);
             int result = delta % interval;
             if (result != 0) continue;
-            bool found = hasRecordInRange(date, date);
+            bool found = hasRecordInRange(id, date, date);
             if (!found) grpInterval->content.append(routine);
         } else {
             QMessageBox::critical(this, "Db Error", "Unidentified type found");
@@ -343,7 +343,7 @@ QList<RoutineGroup*> MainWindow::getRoutineOfDate(QDate date)
     return routineGrps;
 }
 
-bool MainWindow::hasRecordInRange(QDate startDate, QDate endDate)
+bool MainWindow::hasRecordInRange(int routine_id, QDate startDate, QDate endDate)
 {
     QString startDateStr = startDate.toString(Qt::ISODate);
     QString endDateStr = endDate.toString(Qt::ISODate);
@@ -353,9 +353,11 @@ bool MainWindow::hasRecordInRange(QDate startDate, QDate endDate)
         "SELECT EXISTS("
         "SELECT 1 "
         "FROM records "
-        "WHERE date >= :startDate "
+        "WHERE routine_id=:routine_id "
+        "AND date >= :startDate "
         "AND date <= :endDate);"
         );
+    query.bindValue(":routine_id", routine_id);
     query.bindValue(":startDate", startDateStr);
     query.bindValue(":endDate", endDateStr);
     bool ok = query.exec();
@@ -368,7 +370,10 @@ bool MainWindow::hasRecordInRange(QDate startDate, QDate endDate)
     while (query.next()) {
         int found = query.value(0).toInt();
         qDebug() << found;
+        return found;
     }
+
+    QMessageBox::critical(this, "Db Error", "Invalid state");
     return 0;
 }
 

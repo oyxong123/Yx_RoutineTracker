@@ -34,6 +34,7 @@ HistoryDialog::~HistoryDialog()
 
 void HistoryDialog::closeEvent(QCloseEvent *event)
 {
+    mw->initializeFromOutside();
     mw->show();
 
     QDialog::closeEvent(event);
