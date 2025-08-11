@@ -26,6 +26,7 @@ private slots:
     void btnHome_clicked();
     void btnAdd_clicked();
     void btnDel_clicked();
+    void btnDnd_clicked();
     void treRoutine_activeChecked(QTreeWidgetItem *item, int col);
 
 private:

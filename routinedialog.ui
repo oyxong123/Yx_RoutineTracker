@@ -22,6 +22,21 @@
      <height>280</height>
     </rect>
    </property>
+   <property name="showDropIndicator" stdset="0">
+    <bool>false</bool>
+   </property>
+   <property name="dragEnabled">
+    <bool>false</bool>
+   </property>
+   <property name="dragDropMode">
+    <enum>QAbstractItemView::DragDropMode::NoDragDrop</enum>
+   </property>
+   <property name="defaultDropAction">
+    <enum>Qt::DropAction::IgnoreAction</enum>
+   </property>
+   <property name="verticalScrollMode">
+    <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
+   </property>
    <property name="columnCount">
     <number>0</number>
    </property>
@@ -76,11 +91,50 @@
    <property name="focusPolicy">
     <enum>Qt::FocusPolicy::TabFocus</enum>
    </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton:checked {
+	 background-color: rgb(150, 150, 150);  
+    color: white;
+	border: 1px solid black;
+}</string>
+   </property>
    <property name="text">
     <string/>
    </property>
    <property name="icon">
     <iconset theme="QIcon::ThemeIcon::ListRemove"/>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnDnd">
+   <property name="geometry">
+    <rect>
+     <x>300</x>
+     <y>20</y>
+     <width>24</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::FocusPolicy::TabFocus</enum>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton:checked {
+	 background-color: rgb(150, 150, 150);  
+    color: white;
+	border: 1px solid black;
+}</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::MediaPlaylistShuffle"/>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>

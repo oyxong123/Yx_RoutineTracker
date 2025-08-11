@@ -22,6 +22,7 @@ RoutineDialog::RoutineDialog(QWidget *parent)
     QObject::connect(ui->btnHome, &QPushButton::clicked, this, &RoutineDialog::btnHome_clicked);
     QObject::connect(ui->btnAdd, &QPushButton::clicked, this, &RoutineDialog::btnAdd_clicked);
     QObject::connect(ui->btnDel, &QPushButton::clicked, this, &RoutineDialog::btnDel_clicked);
+    QObject::connect(ui->btnDnd, &QPushButton::clicked, this, &RoutineDialog::btnDnd_clicked);
     QObject::connect(ui->treRoutine, &QTreeWidget::itemChanged, this, &RoutineDialog::treRoutine_activeChecked);
 
     initialize();
@@ -204,10 +205,62 @@ void RoutineDialog::btnAdd_clicked()
 
 void RoutineDialog::btnDel_clicked()
 {
-
+    bool isChecked = ui->btnDel->isChecked();
+    if (isChecked) {
+        ui->btnDnd->setChecked(false);
+        ui->treRoutine->setSelectionMode(QAbstractItemView::SingleSelection);
+        ui->treRoutine->clearSelection();
+    } else {
+        ui->btnDel->setChecked(true);
+        QList<QTreeWidgetItem*> selectedItems = ui->treRoutine->selectedItems();
+        if (selectedItems.size() > 1) {
+            QMessageBox::critical(this, "GUI Error", "Invalid selected items count found");
+            return;
+        } else if (selectedItems.size() == 1) {
+            QTreeWidgetItem* item = selectedItems.first();
+            int id = item->data(0, RoleId).toInt();
+            QMessageBox::StandardButton rc = QMessageBox::question(this,
+                                                                       "Confirm",
+                                                                       "Are you sure you want to delete this routine?");
+            if (rc == QMessageBox::Yes) {
+                QSqlQuery query;
+                query.prepare("DELETE FROM routine "
+                              "WHERE id=:id");
+                query.bindValue(":id", id);
+                bool ok = query.exec();
+                qDebug() << "Executed Query: " << query.executedQuery();
+                qDebug() << "Bound Values: " << query.boundValues();
+                if (!ok) {
+                    QMessageBox::critical(this, "Db Error", query.lastError().text());
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
+        ui->treRoutine->clearSelection();
+        ui->treRoutine->setSelectionMode(QAbstractItemView::NoSelection);
+        ui->btnDel->setChecked(false);
+        initialize();
+    }
 }
 
-void RoutineDialog::treRoutine_activeChecked(QTreeWidgetItem *item, int col) {
+void RoutineDialog::btnDnd_clicked()  // not yet implemeted.
+{
+    bool isChecked = ui->btnDnd->isChecked();
+    if (isChecked) {
+        ui->btnDel->setChecked(false);
+        ui->treRoutine->setSelectionMode(QAbstractItemView::SingleSelection);
+        ui->treRoutine->clearSelection();
+
+    } else {
+        ui->treRoutine->clearSelection();
+        ui->treRoutine->setSelectionMode(QAbstractItemView::NoSelection);
+    }
+}
+
+void RoutineDialog::treRoutine_activeChecked(QTreeWidgetItem *item, int col)
+{
     if (col == idxColActive) {
         int id = item->data(0, RoleId).toInt();
         bool is_active;
@@ -216,7 +269,9 @@ void RoutineDialog::treRoutine_activeChecked(QTreeWidgetItem *item, int col) {
         else is_active = 1;
 
         QSqlQuery query;
-        query.prepare("UPDATE routine SET is_active=:is_active WHERE id=:id");
+        query.prepare("UPDATE routine "
+                      "SET is_active=:is_active "
+                      "WHERE id=:id");
         query.bindValue(":is_active", is_active);
         query.bindValue(":id", id);
         bool ok = query.exec();

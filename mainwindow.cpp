@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->btnNextDate, &QPushButton::clicked, this, &MainWindow::btnNextDate_clicked);
     QObject::connect(ui->btnPreviousDate, &QPushButton::clicked, this, &MainWindow::btnPreviousDate_clicked);
     QObject::connect(ui->btnRoutine, &QPushButton::clicked, this, &MainWindow::btnRoutine_clicked);
+    QObject::connect(&tray, &QSystemTrayIcon::activated, this, &MainWindow::tray_clicked);
 
     // Initialize system tray icon.
     exitAction = trayMenu.addAction("Exit");
