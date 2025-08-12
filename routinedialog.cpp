@@ -22,6 +22,7 @@ RoutineDialog::RoutineDialog(QWidget *parent)
     QObject::connect(ui->btnHome, &QPushButton::clicked, this, &RoutineDialog::btnHome_clicked);
     QObject::connect(ui->btnAdd, &QPushButton::clicked, this, &RoutineDialog::btnAdd_clicked);
     QObject::connect(ui->btnDel, &QPushButton::clicked, this, &RoutineDialog::btnDel_clicked);
+    QObject::connect(ui->btnDnd, &QPushButton::clicked, this, &RoutineDialog::btnDnd_clicked);
     QObject::connect(ui->btnUp, &QPushButton::clicked, this, &RoutineDialog::btnUp_clicked);
     QObject::connect(ui->btnDown, &QPushButton::clicked, this, &RoutineDialog::btnDown_clicked);
     QObject::connect(ui->treRoutine, &QTreeWidget::itemChanged, this, &RoutineDialog::treRoutine_activeChecked);
@@ -145,7 +146,7 @@ void RoutineDialog::initialize()
             QMessageBox::critical(this, "Computation Error", "Priority exceeded maximum value of 99999");
             return;
         }
-        QString lexSortKey =  QString("%1").arg(priority, 5, 10, QChar('0'));  // Pad the priority number to 5 digits with leading zeros (e.g., "00007", "00010", "00100").
+        QString lexSortKey = getLexSortKey(priority);
         item->setText(idxColPriority, lexSortKey);
 
         if (type == "Daily") grpDaily->addChild(item);
@@ -213,6 +214,7 @@ void RoutineDialog::btnDel_clicked()
 {
     bool isChecked = ui->btnDel->isChecked();
     if (isChecked) {
+        ui->btnDnd->setChecked(false);
         ui->treRoutine->setSelectionMode(QAbstractItemView::SingleSelection);
         ui->treRoutine->clearSelection();
 
@@ -257,14 +259,180 @@ void RoutineDialog::btnDel_clicked()
     }
 }
 
+void RoutineDialog::btnDnd_clicked()
+{
+    bool isChecked = ui->btnDnd->isChecked();
+    if (isChecked) {
+        ui->btnDel->setChecked(false);
+        ui->btnUp->setEnabled(true);
+        ui->btnDown->setEnabled(true);
+        ui->treRoutine->setSelectionMode(QAbstractItemView::SingleSelection);
+        ui->treRoutine->clearSelection();
+
+        // Disable selection on all routine grp headers.
+        int topCount = ui->treRoutine->topLevelItemCount();
+        for (int i = 0; i < topCount; ++i) {
+            QTreeWidgetItem* parentItem = ui->treRoutine->topLevelItem(i);
+            if (parentItem) parentItem->setFlags(parentItem->flags() & ~Qt::ItemIsSelectable);
+        }
+    } else {
+        ui->btnUp->setEnabled(false);
+        ui->btnDown->setEnabled(false);
+        ui->treRoutine->clearSelection();
+        ui->treRoutine->setSelectionMode(QAbstractItemView::NoSelection);
+    }
+}
+
 void RoutineDialog::btnUp_clicked()
 {
+    QList<QTreeWidgetItem*> selectedItems = ui->treRoutine->selectedItems();
+    if (selectedItems.size() > 1) {
+        QMessageBox::critical(this, "GUI Error", "Invalid selected items count found");
+        return;
+    } else if (selectedItems.size() < 1) {
+        return;
+    }
 
+    QTreeWidgetItem* selectedItem = selectedItems.first();
+    QTreeWidgetItem* parent = selectedItem->parent();
+    int selectedId = selectedItem->data(0, RoleId).toInt();
+    int selectedPriority = selectedItem->text(idxColPriority).toInt();
+    int idxSelectedItem = parent->indexOfChild(selectedItem);
+
+    if (idxSelectedItem == 0) return;  // Cancel action if it's the top item.
+
+    QTreeWidgetItem* previousItem = parent->child(idxSelectedItem - 1);
+    int previousId = previousItem->data(0, RoleId).toInt();
+    int previousPriority = previousItem->text(idxColPriority).toInt();
+    int idxPreviousItem = parent->indexOfChild(previousItem);
+    if (idxPreviousItem != idxSelectedItem - 1) {
+        QMessageBox::critical(this, "Computation Error", "Invalid index found");
+        return;
+    }
+
+    // Switch priority between the selected item and the previous item.
+    {
+        QSqlQuery query;
+        query.prepare("UPDATE routine "
+                      "SET priority=:priority "
+                      "WHERE id=:id");
+        query.bindValue(":priority", previousPriority);
+        query.bindValue(":id", selectedId);
+        bool ok = query.exec();
+        qDebug() << "Executed Query: " << query.executedQuery();
+        qDebug() << "Bound Values: " << query.boundValues();
+        if (!ok) {
+            QMessageBox::critical(this, "Db Error", query.lastError().text());
+            return;
+        }
+    }
+    {
+        QSqlQuery query;
+        query.prepare("UPDATE routine "
+                      "SET priority=:priority "
+                      "WHERE id=:id");
+        query.bindValue(":priority", selectedPriority);
+        query.bindValue(":id", previousId);
+        bool ok = query.exec();
+        qDebug() << "Executed Query: " << query.executedQuery();
+        qDebug() << "Bound Values: " << query.boundValues();
+        if (!ok) {
+            QMessageBox::critical(this, "Db Error", query.lastError().text());
+            return;
+        }
+    }
+
+    parent->takeChild(idxPreviousItem);  // Remove previous item.
+    parent->takeChild(idxPreviousItem);  // Remove selected item.
+    parent->insertChild(idxPreviousItem, previousItem);  // Insert previous item.
+    parent->insertChild(idxPreviousItem, selectedItem);  // Insert selected item (above previous item).
+
+    QString selectedLexSortKey = getLexSortKey(previousPriority);
+    QString previousLexSortKey = getLexSortKey(selectedPriority);
+    selectedItem->setText(idxColPriority, selectedLexSortKey);
+    previousItem->setText(idxColPriority, previousLexSortKey);
+
+    ui->treRoutine->clearSelection();
+    selectedItem->setSelected(true);
 }
 
 void RoutineDialog::btnDown_clicked()
 {
+    QList<QTreeWidgetItem*> selectedItems = ui->treRoutine->selectedItems();
+    if (selectedItems.size() > 1) {
+        QMessageBox::critical(this, "GUI Error", "Invalid selected items count found");
+        return;
+    } else if (selectedItems.size() < 1) {
+        return;
+    }
 
+    QTreeWidgetItem* selectedItem = selectedItems.first();
+    QTreeWidgetItem* parent = selectedItem->parent();
+    int selectedId = selectedItem->data(0, RoleId).toInt();
+    int selectedPriority = selectedItem->text(idxColPriority).toInt();
+    int idxSelectedItem = parent->indexOfChild(selectedItem);
+
+    int itemCount = parent->childCount();
+    if (idxSelectedItem == itemCount - 1) return;  // Cancel action if it's the bottom-most item.
+
+    QTreeWidgetItem* nextItem = parent->child(idxSelectedItem + 1);
+    int nextId = nextItem->data(0, RoleId).toInt();
+    int nextPriority = nextItem->text(idxColPriority).toInt();
+    int idxNextItem = parent->indexOfChild(nextItem);
+    if (idxNextItem != idxSelectedItem + 1) {
+        QMessageBox::critical(this, "Computation Error", "Invalid index found");
+        return;
+    }
+
+    // Switch priority between the selected item and the next item.
+    {
+        QSqlQuery query;
+        query.prepare("UPDATE routine "
+                      "SET priority=:priority "
+                      "WHERE id=:id");
+        query.bindValue(":priority", nextPriority);
+        query.bindValue(":id", selectedId);
+        bool ok = query.exec();
+        qDebug() << "Executed Query: " << query.executedQuery();
+        qDebug() << "Bound Values: " << query.boundValues();
+        if (!ok) {
+            QMessageBox::critical(this, "Db Error", query.lastError().text());
+            return;
+        }
+    }
+    {
+        QSqlQuery query;
+        query.prepare("UPDATE routine "
+                      "SET priority=:priority "
+                      "WHERE id=:id");
+        query.bindValue(":priority", selectedPriority);
+        query.bindValue(":id", nextId);
+        bool ok = query.exec();
+        qDebug() << "Executed Query: " << query.executedQuery();
+        qDebug() << "Bound Values: " << query.boundValues();
+        if (!ok) {
+            QMessageBox::critical(this, "Db Error", query.lastError().text());
+            return;
+        }
+    }
+
+    parent->takeChild(idxSelectedItem);  // Remove selected item.
+    parent->takeChild(idxSelectedItem);  // Remove next item.
+    parent->insertChild(idxSelectedItem, selectedItem);  // Insert selected item.
+    parent->insertChild(idxSelectedItem, nextItem);  // Insert next item (above selected item).
+
+    QString nextLexSortKey = getLexSortKey(selectedPriority);
+    nextItem->setText(idxColPriority, nextLexSortKey);
+    QString selectedLexSortKey = getLexSortKey(nextPriority);
+    selectedItem->setText(idxColPriority, selectedLexSortKey);
+
+    ui->treRoutine->clearSelection();
+    selectedItem->setSelected(true);
+}
+
+QString RoutineDialog::getLexSortKey(int priority)
+{
+    return QString("%1").arg(priority, 5, 10, QChar('0'));  // Pad the priority number to 5 digits with leading zeros (e.g., "00007", "00010", "00100").
 }
 
 void RoutineDialog::treRoutine_activeChecked(QTreeWidgetItem *item, int col)

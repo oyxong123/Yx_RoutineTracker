@@ -26,6 +26,7 @@ private slots:
     void btnHome_clicked();
     void btnAdd_clicked();
     void btnDel_clicked();
+    void btnDnd_clicked();
     void btnUp_clicked();
     void btnDown_clicked();
     void treRoutine_activeChecked(QTreeWidgetItem* item, int col);
@@ -43,6 +44,7 @@ private:
     int idxColPriority;
     int RoleId = Qt::UserRole;
     bool sameItemSelected = false;
+    QString getLexSortKey(int priority);
 };
 
 #endif // ROUTINEDIALOG_H
