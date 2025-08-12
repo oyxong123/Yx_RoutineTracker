@@ -73,9 +73,39 @@ void RoutineDialog_Add::cbType_currentIndexChanged(int /*index*/)
 
 void RoutineDialog_Add::btnAdd_clicked()
 {
-    QString name = ui->inpName->text();
+    QString name = ui->inpName->text().trimmed();
     QString type = ui->cbType->currentText();
     int is_active = 1;
+
+    // Ensure each routine name is unique.
+    {
+        QSqlQuery query;
+        query.prepare(
+            "SELECT EXISTS("
+            "SELECT 1 "
+            "FROM routine "
+            "WHERE name = :name);"
+            );
+        query.bindValue(":name", name);
+        query.setForwardOnly(true);
+        bool ok = query.exec();
+        qDebug() << "Executed Query: " << query.executedQuery();
+        qDebug() << "Bound Values: " << query.boundValues();
+        if (!ok) {
+            QMessageBox::critical(this, "Db Error", query.lastError().text());
+            return;
+        }
+        qDebug() << "Result Set: ";
+        while (query.next()) {
+            int found = query.value(0).toInt();
+            qDebug() << found;
+
+            if (found) {
+                QMessageBox::critical(this, "Invalid", "Name already existed");
+                return;
+            }
+        }
+    }
 
     QString type_param = nullptr;
     if (type == "Day") {
