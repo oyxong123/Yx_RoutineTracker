@@ -108,7 +108,7 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QPushButton" name="btnDnd">
+  <widget class="QPushButton" name="btnDown">
    <property name="geometry">
     <rect>
      <x>300</x>
@@ -120,21 +120,30 @@
    <property name="focusPolicy">
     <enum>Qt::FocusPolicy::TabFocus</enum>
    </property>
-   <property name="styleSheet">
-    <string notr="true">QPushButton:checked {
-	 background-color: rgb(150, 150, 150);  
-    color: white;
-	border: 1px solid black;
-}</string>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::GoDown"/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnUp">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>20</y>
+     <width>24</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::FocusPolicy::TabFocus</enum>
    </property>
    <property name="text">
     <string/>
    </property>
    <property name="icon">
-    <iconset theme="QIcon::ThemeIcon::MediaPlaylistShuffle"/>
-   </property>
-   <property name="checkable">
-    <bool>true</bool>
+    <iconset theme="QIcon::ThemeIcon::GoUp"/>
    </property>
   </widget>
  </widget>

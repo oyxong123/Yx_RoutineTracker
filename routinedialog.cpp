@@ -22,8 +22,12 @@ RoutineDialog::RoutineDialog(QWidget *parent)
     QObject::connect(ui->btnHome, &QPushButton::clicked, this, &RoutineDialog::btnHome_clicked);
     QObject::connect(ui->btnAdd, &QPushButton::clicked, this, &RoutineDialog::btnAdd_clicked);
     QObject::connect(ui->btnDel, &QPushButton::clicked, this, &RoutineDialog::btnDel_clicked);
-    QObject::connect(ui->btnDnd, &QPushButton::clicked, this, &RoutineDialog::btnDnd_clicked);
+    QObject::connect(ui->btnUp, &QPushButton::clicked, this, &RoutineDialog::btnUp_clicked);
+    QObject::connect(ui->btnDown, &QPushButton::clicked, this, &RoutineDialog::btnDown_clicked);
     QObject::connect(ui->treRoutine, &QTreeWidget::itemChanged, this, &RoutineDialog::treRoutine_activeChecked);
+    QObject::connect(ui->treRoutine, &QTreeWidget::itemPressed, this, &RoutineDialog::treRoutine_itemPressed);
+    QObject::connect(ui->treRoutine, &QTreeWidget::itemClicked, this, &RoutineDialog::treRoutine_itemClicked);
+
 
     initialize();
 
@@ -46,7 +50,9 @@ void RoutineDialog::closeEvent(QCloseEvent *event)
 void RoutineDialog::initialize()
 {
     // Reset QTreeWidget.
+    ui->btnDel->setChecked(false);
     ui->treRoutine->clear();
+    ui->treRoutine->clearSelection();
     ui->treRoutine->setSelectionMode(QAbstractItemView::NoSelection);
     ui->treRoutine->setFocusPolicy(Qt::NoFocus);
 
@@ -207,9 +213,15 @@ void RoutineDialog::btnDel_clicked()
 {
     bool isChecked = ui->btnDel->isChecked();
     if (isChecked) {
-        ui->btnDnd->setChecked(false);
         ui->treRoutine->setSelectionMode(QAbstractItemView::SingleSelection);
         ui->treRoutine->clearSelection();
+
+        // Disable selection on all routine grp headers.
+        int topCount = ui->treRoutine->topLevelItemCount();
+        for (int i = 0; i < topCount; ++i) {
+            QTreeWidgetItem* parentItem = ui->treRoutine->topLevelItem(i);
+            if (parentItem) parentItem->setFlags(parentItem->flags() & ~Qt::ItemIsSelectable);
+        }
     } else {
         ui->btnDel->setChecked(true);
         QList<QTreeWidgetItem*> selectedItems = ui->treRoutine->selectedItems();
@@ -245,18 +257,14 @@ void RoutineDialog::btnDel_clicked()
     }
 }
 
-void RoutineDialog::btnDnd_clicked()  // not yet implemeted.
+void RoutineDialog::btnUp_clicked()
 {
-    bool isChecked = ui->btnDnd->isChecked();
-    if (isChecked) {
-        ui->btnDel->setChecked(false);
-        ui->treRoutine->setSelectionMode(QAbstractItemView::SingleSelection);
-        ui->treRoutine->clearSelection();
 
-    } else {
-        ui->treRoutine->clearSelection();
-        ui->treRoutine->setSelectionMode(QAbstractItemView::NoSelection);
-    }
+}
+
+void RoutineDialog::btnDown_clicked()
+{
+
 }
 
 void RoutineDialog::treRoutine_activeChecked(QTreeWidgetItem *item, int col)
@@ -282,4 +290,20 @@ void RoutineDialog::treRoutine_activeChecked(QTreeWidgetItem *item, int col)
             return;
         }
     }
+}
+
+void RoutineDialog::treRoutine_itemPressed(QTreeWidgetItem* item, int /*col*/)
+{
+    if (item && item == lastClickedItem && item->isSelected()) sameItemSelected = true;  // 'if (item)' checks that user actually clicked on a QTreeWidgetItem.
+    else sameItemSelected = false;
+}
+
+void RoutineDialog::treRoutine_itemClicked(QTreeWidgetItem* item, int /*col*/)
+{
+    if (sameItemSelected) {
+        ui->treRoutine->clearSelection();
+        lastClickedItem = nullptr;
+    }
+    else lastClickedItem = item;
+    sameItemSelected = false;  // Even if the item was just deselected, it should be set to false as well to reset state.
 }
