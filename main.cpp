@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "windowtracker.h"
 
 #include <QApplication>
 #include <QFile>
@@ -7,10 +8,26 @@
 #include <QSqlError>
 #include <QMessageBox>
 
+class WindowEventFilter : public QObject {
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override {
+        QWidget *w = qobject_cast<QWidget*>(obj);
+        if (w && w->isWindow()) {
+            if (event->type() == QEvent::Show || event->type() == QEvent::WindowActivate) {
+                WindowTracker::setCurrent(w);
+            }
+        }
+        return QObject::eventFilter(obj, event);
+    }
+};
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     MainWindow mw;
+
+    WindowEventFilter *filter = new WindowEventFilter;
+    a.installEventFilter(filter);
 
     QString dbFile = "yx_routinetracker.db";
     QString schemaFile = "schema.sql";

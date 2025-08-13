@@ -3,6 +3,7 @@
 #include "ui_mainwindow.h"
 #include "routinestruct.h"
 #include "historydialog_search.h"
+#include "windowtracker.h"
 
 #include <QDebug>
 #include <QSqlError>
@@ -381,9 +382,12 @@ bool MainWindow::hasRecordInRange(int routine_id, QDate startDate, QDate endDate
 void MainWindow::tray_clicked(QSystemTrayIcon::ActivationReason reason)
 {
     if (reason == QSystemTrayIcon::Trigger) {  // The icon is clicked.
-        show();
-        raise();
-        activateWindow();
+        QWidget *w = WindowTracker::currentWindow();
+        if (w) {
+            w->showNormal();
+            w->raise();
+            w->activateWindow();
+        }
     }
 }
 

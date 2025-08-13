@@ -16,7 +16,8 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     routinedialog.cpp \
-    routinedialog_add.cpp
+    routinedialog_add.cpp \
+    windowtracker.cpp
 
 HEADERS += \
     historydialog.h \
@@ -24,7 +25,8 @@ HEADERS += \
     mainwindow.h \
     routinedialog.h \
     routinedialog_add.h \
-    routinestruct.h
+    routinestruct.h \
+    windowtracker.h
 
 FORMS += \
     historydialog.ui \
