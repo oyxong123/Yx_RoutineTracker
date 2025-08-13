@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QKeyEvent>
 
 RoutineDialog_Add::RoutineDialog_Add(QWidget *parent)
     : QDialog(parent)
@@ -180,3 +181,12 @@ void RoutineDialog_Add::btnAdd_clicked()
     QMessageBox::information(this, "Success", "Created routine: " + name + "!");
     close();
 }
+
+void RoutineDialog_Add::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Escape) {
+        event->ignore();
+        return;
+    }
+    QDialog::keyPressEvent(event);
+}
+

@@ -8,6 +8,7 @@
 #include <QDate>
 #include <QMessageBox>
 #include <QSqlError>
+#include <QKeyEvent>
 
 RoutineDialog::RoutineDialog(QWidget *parent)
     : QDialog(parent)
@@ -474,4 +475,12 @@ void RoutineDialog::treRoutine_itemClicked(QTreeWidgetItem* item, int /*col*/)
     }
     else lastClickedItem = item;
     sameItemSelected = false;  // Even if the item was just deselected, it should be set to false as well to reset state.
+}
+
+void RoutineDialog::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Escape) {
+        event->ignore();
+        return;
+    }
+    QDialog::keyPressEvent(event);
 }

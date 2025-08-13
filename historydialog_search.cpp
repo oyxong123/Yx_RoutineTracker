@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QKeyEvent>
 
 HistoryDialog_Search::HistoryDialog_Search(QWidget *parent)
     : QDialog(parent)
@@ -172,4 +173,12 @@ void HistoryDialog_Search::cbPreset_changed()
     // Release the blocked signals.
     ui->deStartDate->blockSignals(false);
     ui->deEndDate->blockSignals(false);
+}
+
+void HistoryDialog_Search::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Escape) {
+        event->ignore();
+        return;
+    }
+    QDialog::keyPressEvent(event);
 }

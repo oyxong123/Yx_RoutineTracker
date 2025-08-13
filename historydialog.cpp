@@ -7,6 +7,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QOperatingSystemVersion>
+#include <QKeyEvent>
 
 HistoryDialog::HistoryDialog(const QDate &startDate, const QDate &endDate, QWidget *parent)
     : QDialog(parent)
@@ -235,4 +236,12 @@ void HistoryDialog::btnHome_clicked()
 {
     close();
     mw->show();
+}
+
+void HistoryDialog::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Escape) {
+        event->ignore();
+        return;
+    }
+    QDialog::keyPressEvent(event);
 }
