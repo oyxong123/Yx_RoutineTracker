@@ -1,5 +1,12 @@
 <RCC>
     <qresource prefix="/system">
-        <file>resources/Hackmon16.png</file>
+        <file>resources/Clockmon32.png</file>
+        <file>resources/Clockmon.clip</file>
+        <file>resources/Clockmon.ico</file>
+        <file>resources/Clockmon16.png</file>
+        <file>resources/Clockmon32 (Unscaled Original).png</file>
+        <file>resources/Clockmon64.png</file>
+        <file>resources/Clockmon128.png</file>
+        <file>resources/Clockmon256.png</file>
     </qresource>
 </RCC>

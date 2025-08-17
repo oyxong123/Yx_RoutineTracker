@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Initialize system tray icon.
     exitAction = trayMenu.addAction("Exit");
     QObject::connect(exitAction, &QAction::triggered, this, &MainWindow::trayExitAction_clicked);
-    tray.setIcon(QIcon(":/system/resources/Hackmon16.png"));
+    tray.setIcon(QIcon(":/system/resources/Clockmon16.png"));
     tray.setToolTip("Yx-RoutineTracker");
     tray.setContextMenu(&trayMenu);
     tray.show();

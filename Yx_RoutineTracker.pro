@@ -1,5 +1,5 @@
 QT       += core gui sql
-# RC_ICONS = resources/FIXME.ico  // set application icon here.
+RC_ICONS = resources/Clockmon.ico
 TARGET = Yx-RoutineTracker
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
