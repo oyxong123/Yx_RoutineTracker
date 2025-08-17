@@ -40,7 +40,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
 
     QTimer::singleShot(0, this, &MainWindow::initialize);  // Need to be defered, otherwise would return 'qt.sql.qsqlquery: QSqlQuery::exec: database not open'.
-    show();
 }
 
 MainWindow::~MainWindow()
