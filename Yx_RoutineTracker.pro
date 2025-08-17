@@ -37,8 +37,8 @@ FORMS += \
 
 # Copies schema.sql to the build directory so it can be ran to create database if yx_routinetracker.db does not exist.
 QMAKE_POST_LINK += \
-    copy /Y \"$$PWD\\schema.sql\" \"$$OUT_PWD\\\" && \
-    copy /Y \"$$PWD\\sqlite3.exe\" \"$$OUT_PWD\\\"
+    copy /Y \"$$PWD\\schema.sql\" \"$$OUT_PWD\\release\" && \
+    copy /Y \"$$PWD\\sqlite3.exe\" \"$$OUT_PWD\\release\"
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
