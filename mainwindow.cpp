@@ -30,9 +30,9 @@ MainWindow::MainWindow(QWidget *parent)
     // Initialize system tray icon.
     exitAction = trayMenu.addAction("Exit");
     QObject::connect(exitAction, &QAction::triggered, this, &MainWindow::trayExitAction_clicked);
+    tray.setContextMenu(&trayMenu);
     tray.setIcon(QIcon(":/system/resources/Clockmon16.png"));
     tray.setToolTip("Yx-RoutineTracker");
-    tray.setContextMenu(&trayMenu);
     tray.show();
 
     displayDate = QDate::currentDate();
@@ -40,6 +40,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
 
     QTimer::singleShot(0, this, &MainWindow::initialize);  // Need to be defered, otherwise would return 'qt.sql.qsqlquery: QSqlQuery::exec: database not open'.
+    show();
+    hide();
 }
 
 MainWindow::~MainWindow()
@@ -380,9 +382,13 @@ bool MainWindow::hasRecordInRange(int routine_id, QDate startDate, QDate endDate
 
 void MainWindow::tray_clicked(QSystemTrayIcon::ActivationReason reason)
 {
-    if (reason == QSystemTrayIcon::Trigger) {  // The icon is clicked.
+    if (reason == QSystemTrayIcon::Trigger) {  // The icon is left-clicked.
         QWidget *w = WindowTracker::currentWindow();
         if (w) {
+            displayDate = QDate::currentDate();
+            ui->lblDate->setText(displayDate.toString(Qt::RFC2822Date));
+            ui->lblDay->setText(getDayFromInt(displayDate.dayOfWeek()));
+            initialize();
             w->showNormal();
             w->raise();
             w->activateWindow();
