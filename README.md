@@ -23,7 +23,9 @@ It had saved me the effort to keep track of my routines manually using Microsoft
 In addition to that, I built this with the aim that it could help others that want a minimalistic routine tracker in their life. 
 The app have proved to be a reliable utility program for my own personal life. 
 
-Feel to to try it out, share it with others, and let me know if the app personally helped you tremendously!  
+Feel to to try it out, share it with others, and let me know if the app personally helped you tremendously!
+
+Contributions, issues, and pull requests are welcomed as well. 
 
 ## Requirements
 - Windows 10 (or above, not tested)
@@ -49,7 +51,8 @@ Feel to to try it out, share it with others, and let me know if the app personal
 
 ## Usage
 
+## Roadmap
 
 ## Trivia
-- The app icon was drawn by me. It is my own special rendition of Clockmon (Xros Wars) from digimon! (An app that revolves around time :D = Clockmon)
+- The app icon was drawn by me. It is my own special rendition of Clockmon (Xros Wars) from digimon! (An app that revolves around time = Clockmon :D)
 
