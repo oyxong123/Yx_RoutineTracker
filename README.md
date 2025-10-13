@@ -1,5 +1,4 @@
 # Yx-RoutineTracker
-
 Yx-RoutineTracker is a lightweight routine to-do app I built with Qt to manage my own routines. 
 I designed it with the philosophy of having it as functionality and aesthetically minimalistic as possible as that is my preference. 
 It contains only the functionalities that I need. 
