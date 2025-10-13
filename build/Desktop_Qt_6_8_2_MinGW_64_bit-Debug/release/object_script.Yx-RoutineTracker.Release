@@ -1,0 +1,13 @@
+release/historydialog.o
+release/historydialog_search.o
+release/main.o
+release/mainwindow.o
+release/routinedialog.o
+release/routinedialog_add.o
+release/windowtracker.o
+release/qrc_resources.o
+release/moc_historydialog.o
+release/moc_historydialog_search.o
+release/moc_mainwindow.o
+release/moc_routinedialog.o
+release/moc_routinedialog_add.o

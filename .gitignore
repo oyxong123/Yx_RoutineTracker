@@ -6,7 +6,6 @@
 *.a
 *.core
 *.moc
-*.o
 *.obj
 *.orig
 *.rej
@@ -14,7 +13,6 @@
 *.so.*
 *_pch.h.cpp
 *_resource.rc
-*.qm
 .#*
 *.*#
 core
@@ -63,15 +61,12 @@ CMakeLists.txt.user*
 
 # MinGW generated files
 *.Debug
-*.Release
 
 # Python byte code
 *.pyc
 
 # Binaries
 # --------
-*.dll
-*.exe
 
 # Directories with generated files
 .moc/
