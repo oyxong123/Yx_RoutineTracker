@@ -52,10 +52,12 @@ Contributions, issues, and pull requests are welcomed!
 ## Usage
 (Use case overview. To be updated.)
 
-## Roadmap
+## Future Roadmap
 ### Possible new features:
 - Ability to edit routine details.
-- New routine type: N times per [routine type]. (Excluding daily, day, and interval. One rule that the app enforces is that a routine can only be checked once (a.k.a. have one "checked" record) per day.)
+- New routine type: N times per [routine type].  
+  (Excluding daily, day, and interval.
+  Reason being that one of the explicit principle of the app is that each routine should only be checked once, a.k.a. one "checked" record, per day.)
 
 ### Possible improvements and bug fixes:
 - As of now, when sorting the priorities too fast in the "routine page", the priorities of the routines may end up glitched causing them to share the same priority value.  
