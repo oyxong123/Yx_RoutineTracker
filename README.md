@@ -30,14 +30,14 @@ Contributions, issues, and pull requests are welcomed!
 - Windows 10 (or above, not tested)
 
 ## Installation
-### Method 1: Build from Source
+#### Method 1: Build from Source
 1. Download the **Qt Online Installer** application from the **Qt Official Website**.
 2. Install **Qt 6.8.2** (or above, not tested), the latest **MinGW**, and **Qt Creator** application through the **Qt Online Installer** application.
 3. Download this repository.
 4. Launch **Qt Creator**.
 5. Open the repository folder in **Qt Creator**.
 
-### Method 2: Use Pre-Built Executable
+#### Method 2: Use Pre-Built Executable
 1. Download this directory.
    ```
    Yx_RoutineTracker\build\Desktop_Qt_6_8_2_MinGW_64_bit-Release\release
@@ -52,13 +52,13 @@ Contributions, issues, and pull requests are welcomed!
 (Use case overview. To be updated.)
 
 ## Future Roadmap
-### Possible new features:
+#### Possible new features:
 - Ability to edit routine details.
 - New routine type: N times per [routine type].  
   (Excluding daily, day, and interval.
   Reason being that one of the explicit principle of the app is that each routine should only be checked once, a.k.a. one "checked" record, per day.)
 
-### Possible improvements and bug fixes:
+#### Possible improvements and bug fixes:
 - As of now, when sorting the priorities too fast in the "routine page", the priorities of the routines may end up glitched causing them to share the same priority value.  
 (Suspicion: The current process gets interupted by the new process when the user clicks on the "+" or "-" button subsequently too fast.)
 
