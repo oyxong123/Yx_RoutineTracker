@@ -1,4 +1,7 @@
 # Yx-RoutineTracker
+<p align="center">
+   <img width="128" height="128" alt="Clockmon64" src="https://github.com/user-attachments/assets/d84e8254-5a41-4085-8cb9-5c6dcc1123c4" />
+</p>
 Yx-RoutineTracker is a lightweight routine to-do app I built with Qt Widgets to manage my own routines. 
 I designed it with the philosophy of having it as functionality and aesthetically minimalistic as possible as that is my preference. 
 It contains only the functionalities that I need. 
@@ -49,6 +52,11 @@ Contributions, issues, and pull requests are welcomed!
 6. Press **Win+R** and type **shell:startup** to open the startup folder of the computer, then paste the created shortcut in it. This allows the app to run automatically every time the computer boots up. (Optional)
 
 ## Usage
+
+<p align="center">
+   <img width="258" height="394" alt="image" src="https://github.com/user-attachments/assets/d23bec70-b895-4f23-89eb-b062584c3f73" />
+</p>
+
 (Use case overview. To be updated.)
 
 ## Future Roadmap
