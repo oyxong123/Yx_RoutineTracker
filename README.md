@@ -25,6 +25,7 @@ I personally run this app in the background on my laptop 24/7.
 It had saved me the effort to keep track of my routines manually using Microsoft Excel, and had helped me streamlined my routine tracking process.
 In addition to that, I built this with the aim that it could help others that want a minimalistic routine tracker in their life. 
 The app have proved to be a reliable utility program for my life. 
+It, along with the other programs and applications I have built, integrates into one large ecosystem. 
 
 Feel to to try it out, share it with others, and let me know if the app personally helped you in any way!
 
