@@ -66,6 +66,9 @@ Contributions, issues, and pull requests are welcomed!
 - New routine type: N times per [routine type].  
   (Excluding daily, day, and interval.
   Reason being that one of the explicit principle of the app is that each routine should only be checked once, a.k.a. one "checked" record, per day.)
+  Ability to click a button to set all the routines of a day as 'SPECIAL' (I haven't thought of how to implement this special property).
+  Routines that have the 'SPECIAL' property will be marked using the '-' symbol on the History page.
+  It represent days where the routines cannot be completed due to real-life activities/events taking too much time from the day.
 
 #### Possible improvements and bug fixes:
 - As of now, when sorting the priorities too fast in the "routine page", the priorities of the routines may end up glitched causing them to share the same priority value.  
